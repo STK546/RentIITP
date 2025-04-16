@@ -207,7 +207,118 @@ DELIMITER ;
 
 
 
--- Authenticate User--------------------------------------
+-- ChangePassword --------------------------------------
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS ChangePassword//
+
+CREATE PROCEDURE ChangePassword(
+    IN p_user_id INT,
+    IN p_old_password VARCHAR(255),
+    IN p_new_password VARCHAR(255),
+    OUT out_message VARCHAR(255)
+)
+THIS_PROC: BEGIN
+    DECLARE v_stored_hash VARCHAR(255);
+    DECLARE v_old_input_hash VARCHAR(255);
+    DECLARE v_new_input_hash VARCHAR(255);
+    DECLARE v_user_exists INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SET out_message = 'Error: An unexpected error occurred.';
+    END;
+
+    -- Input validation
+    IF p_user_id IS NULL OR p_old_password IS NULL OR p_old_password = '' OR p_new_password IS NULL OR p_new_password = '' THEN
+        SET out_message = 'Error: All fields are required.';
+        LEAVE THIS_PROC;
+    END IF;
+
+    IF p_old_password = p_new_password THEN
+        SET out_message = 'Error: New password must be different.';
+        LEAVE THIS_PROC;
+    END IF;
+
+    START TRANSACTION;
+
+    -- Check user existence and get current hash
+    SELECT password_hash INTO v_stored_hash
+    FROM Users
+    WHERE user_id = p_user_id;
+
+    IF v_stored_hash IS NULL THEN
+        ROLLBACK;
+        SET out_message = 'Error: User not found.';
+        LEAVE THIS_PROC;
+    END IF;
+
+    -- Verify old password
+    SET v_old_input_hash = SHA2(p_old_password, 256);
+    IF v_stored_hash != v_old_input_hash THEN
+        ROLLBACK;
+        SET out_message = 'Error: Incorrect old password.';
+        LEAVE THIS_PROC;
+    END IF;
+
+    -- Set new password
+    SET v_new_input_hash = SHA2(p_new_password, 256);
+    UPDATE Users
+    SET password_hash = v_new_input_hash
+    WHERE user_id = p_user_id;
+
+    IF ROW_COUNT() = 1 THEN
+        COMMIT;
+        SET out_message = 'Password updated successfully.';
+    ELSE
+        ROLLBACK;
+        SET out_message = 'Error: Update failed.';
+    END IF;
+
+END //
+
+DELIMITER ;
 
 
+-- GetUserProfile --------------------------------------
+-- Change the delimiter to handle the procedure body
+DELIMITER //
 
+-- Drop the procedure if it already exists to allow recreation
+DROP PROCEDURE IF EXISTS GetUserProfile; //
+
+-- Create the stored procedure
+CREATE PROCEDURE GetUserProfile(
+    -- Input parameter
+    IN p_user_id INT -- The ID of the user whose profile is requested
+)
+BEGIN
+    -- Select the relevant profile details for the specified user
+    -- This procedure directly outputs the result set of the SELECT query
+    SELECT
+        user_id,
+        username,
+        email,
+        first_name,
+        last_name,
+        roll_number,
+        phone_number,
+        hostel_name,
+        hostel_block,
+        room_number,
+        profile_picture_url,
+        registration_date,
+        account_status
+    FROM
+        Users
+    WHERE
+        user_id = p_user_id;
+
+    -- No explicit output parameters needed here; the result set is the output.
+    -- If p_user_id does not exist, an empty result set will be returned.
+
+END //
+
+-- Reset the delimiter back to semicolon
+DELIMITER ; //

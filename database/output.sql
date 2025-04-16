@@ -339,11 +339,6 @@ ELECmysql> SELECT @new_user_id, @message;
 
 
 
-
-
-
-
-
 -- Call the procedure with the user's details
 CALL RegisterUser(
     'testuser3',                      -- p_username
@@ -430,3 +425,164 @@ mysql> SELECT @user_id, @fname, @lname, @email_out, @status_out, @message_out;
 1 row in set (0.00 sec)
 
 --
+
+
+mysql>
+mysql> -- Reset the delimiter back to semicolon
+mysql> DELIMITER ;
+mysql> SET @message = '';
+-- Example: UQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Example: Update profile for user_id = 5
+mysql> CALL UpdateUserProfile(
+    ->     5,                      -- p_user_id
+    ->     '9998887770',           -- p_phone_number
+    ->     'APJ Abdul Kalam',      -- p_hostel_name (no change)
+    ->     'C',                    -- p_hostel_block
+    ->     '215',                  -- p_room_number
+    ->     'url/new_vikas.jpg',    -- p_profile_picture_url
+    -> ge
+);    @message
+    -> );
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT @message;
++------------------------------------+
+| @message                           |
++------------------------------------+
+| User profile updated successfully. |
++------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> CALL UpdateUserProfile(
+    7,      ->     7,                      -- p_user_id
+    ->     '',                     -- p_phone_number (will be set to NULL)
+    ->     'CV Raman',             -- p_hostel_name
+    ->     'B',                    -- p_hostel_block
+    ->     '112',                  -- p_room_number
+    ->     '',                     -- p_profile_picture_url (will be set to NULL)
+    ->     @message
+    -> );
+-- Check the result message
+SELECT @message;Query OK, 1 row affected (0.01 sec)
+
+mysql>
+mysql> -- Check the result message
+mysql> SELECT @message;
++------------------------------------+
+| @message                           |
++------------------------------------+
+| User profile updated successfully. |
++------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> CALL UpdateUserProfile(999, '111222333', 'HostelX', 'X', 'X01', NULL, @message);
+ECT @message; -- Should indicate 'User ID not found'Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message; -- Should indicate 'User ID not found'
++---------------------------+
+| @message                  |
++---------------------------+
+| Error: User ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+
+
+
+mysql> SET @message_out = '';
+angePasQuery OK, 0 rows affected (0.00 sec)
+
+mysql> CALL ChangePassword(
+            ->     24,                      -- p_user_id
+    ->     'StrongPassword123!',   -- p_old_password (Replace with actual old password)
+    ->     '12345678', -- p_new_password
+    ->     @message_out
+SELE    -> );
+CT @message_out;Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT @message_out;
++--------------------------------+
+| @message_out                   |
++--------------------------------+
+| Password updated successfully. |
++--------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+
+mysql> SET @message_out = '';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL ChangePassword(1, 'CorrectOldPassword', 'NewSecurePass123!', @message_out);
+ELECQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out;
++--------------------------------+
+| @message_out                   |
++--------------------------------+
+| Error: Incorrect old password. |
++--------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> CALL ChangePassword(999, 'AnyPassword', 'AnyPassword', @message_out);
+ @messaQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Should show 'Error: User ID not found.'
++----------------------------------------+
+| @message_out                           |
++----------------------------------------+
+| Error: New password must be different. |
++----------------------------------------+
+1 row in set (0.01 sec)
+
+mysql>
+mysql> CALL ChangePassword(999, 'AnyPassword', 'AnyPassword2', @message_out);
+ELECT @message_out; -- SQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Should show 'Error: User ID not found.'
++------------------------+
+| @message_out           |
++------------------------+
+| Error: User not found. |
++------------------------+
+1 row in set (0.01 sec)
+
+mysql>
+
+
+mysql>
+mysql> CALL GetUserProfile(1);
++---------+----------+---------------------------+------------+-----------+-------------+--------------+-------------+--------------+-------------+---------------------+---------------------+----------------+
+| user_id | username | email                     | first_name | last_name | roll_number | phone_number | hostel_name | hostel_block | room_number | profile_picture_url | registration_date   | account_status |
++---------+----------+---------------------------+------------+-----------+-------------+--------------+-------------+--------------+-------------+---------------------+---------------------+----------------+
+|       1 | aman_b21 | aman.kumar_b21@iitp.ac.in | Aman       | Kumar     | 2101CS01    | 9876543210   | CV Raman    | A            | 101         | url/aman.jpg        | 2025-04-17 01:07:53 | active         |
++---------+----------+---------------------------+------------+-----------+-------------+--------------+-------------+--------------+-------------+---------------------+---------------------+----------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> -- Call the procedure for another user ID (e.g., user_id = 15)
+mysql> CALL GetUserProfile(15);
++---------+------------+------------------------------+------------+-----------+-------------+--------------+-------------+--------------+-------------+---------------------+---------------------+----------------+
+| user_id | username   | email                        | first_name | last_name | roll_number | phone_number | hostel_name | hostel_block | room_number | profile_picture_url | registration_date   | account_status |
++---------+------------+------------------------------+------------+-----------+-------------+--------------+-------------+--------------+-------------+---------------------+---------------------+----------------+
+|      15 | sanjay_m20 | sanjay.tiwari_m20@iitp.ac.in | Sanjay     | Tiwari    | 20M1CS33    | 9876543224   | Aryabhatta  | A            | 335         | url/sanjay.jpg      | 2025-04-17 01:07:53 | active         |
++---------+------------+------------------------------+------------+-----------+-------------+--------------+-------------+--------------+-------------+---------------------+---------------------+----------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> -- Call for a non-existent user ID (will return an empty set)
+mysql> CALL GetUserProfile(999);
+Empty set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+
