@@ -1,5 +1,5 @@
-import { query } from '../../config/db.config';
-
+// import { query } from '../../config/db.config.js';
+import pool from '../../config/db.config.js';
 async function registerUser(userData) {
     const {
         username, email, password, firstName, lastName,
@@ -16,8 +16,8 @@ async function registerUser(userData) {
 
     try {
         // Execute the CALL statement
-        await query(sql, params);
-        const [outParams] = await query('SELECT @out_user_id AS userId, @out_message AS message');
+        await pool.execute(sql, params);
+        const [outParams] = await pool.execute('SELECT @out_user_id AS userId, @out_message AS message');
         return outParams[0];
 
     } catch (error) {
@@ -35,8 +35,8 @@ async function authenticateUser(username, password) {
     const params = [username, password];
 
     try {
-        await query(sql, params);
-        const [outParams] = await query(
+        await pool.execute(sql, params);
+        const [outParams] = await pool.execute(
             'SELECT @uid AS userId, @fname AS firstName, @lname AS lastName, @email AS email, @status AS accountStatus, @msg AS message'
         );
         return outParams[0];
@@ -46,7 +46,7 @@ async function authenticateUser(username, password) {
     }
 }
 
-export default {
+export {
     registerUser,
     authenticateUser
 };

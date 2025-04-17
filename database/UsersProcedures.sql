@@ -1,17 +1,11 @@
 -- Register User--------------------------------------
-
--- Change the delimiter to handle the procedure body
 DELIMITER //
-
--- Drop the procedure if it already exists to allow recreation
 DROP PROCEDURE IF EXISTS RegisterUser;
 
--- Create the stored procedure
 CREATE PROCEDURE RegisterUser(
-    -- Input parameters matching user data
     IN p_username VARCHAR(50),
     IN p_email VARCHAR(100),
-    IN p_password VARCHAR(255), -- Raw password from user input
+    IN p_password VARCHAR(255),
     IN p_first_name VARCHAR(50),
     IN p_last_name VARCHAR(50),
     IN p_roll_number VARCHAR(20),
@@ -21,37 +15,32 @@ CREATE PROCEDURE RegisterUser(
     IN p_room_number VARCHAR(10),
     IN p_profile_picture_url VARCHAR(255),
 
-    -- Output parameters for feedback
-    OUT out_user_id INT,         -- Will contain the new user_id if successful
-    OUT out_message VARCHAR(255) -- Will contain a success or error message
+    OUT out_user_id INT,         -- new user_id if successful
+    OUT out_message VARCHAR(255) -- success or error message
 )
 BEGIN
-    -- Declare variables
     DECLARE v_hashed_password VARCHAR(255);
     DECLARE duplicate_key INT DEFAULT 0;
 
-    -- Declare a handler for unique key constraint violations (username or email)
-    -- SQLSTATE '23000' is for integrity constraint violation, error 1062 is ER_DUP_ENTRY
     DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
     BEGIN
         GET DIAGNOSTICS CONDITION 1 @sqlstate = RETURNED_SQLSTATE, @errno = MYSQL_ERRNO, @text = MESSAGE_TEXT;
-        IF @errno = 1062 THEN -- Duplicate entry error code
+        IF @errno = 1062 THEN 
             SET duplicate_key = 1;
             IF @text LIKE '%username%' THEN
                 SET out_message = 'Error: Username already exists.';
             ELSEIF @text LIKE '%email%' THEN
                 SET out_message = 'Error: Email address already exists.';
             ELSE
-                SET out_message = CONCAT('Error: Duplicate entry violation - ', @text); -- More generic duplicate message
+                SET out_message = CONCAT('Error: Duplicate entry violation - ', @text); 
             END IF;
         ELSE
-            SET out_message = CONCAT('Error: An SQL error occurred - ', @errno, ': ', @text); -- General SQL error
+            SET out_message = CONCAT('Error: An SQL error occurred - ', @errno, ': ', @text); 
         END IF;
-        SET out_user_id = NULL; -- Indicate failure
+        SET out_user_id = NULL;
     END;
 
-    -- --- Input Validation (Basic) ---
-    -- You might add more checks here (e.g., password complexity) in application logic preferably
+    -- --- Input Validation ---
     IF p_username IS NULL OR p_username = '' OR
        p_email IS NULL OR p_email = '' OR
        p_password IS NULL OR p_password = '' OR
@@ -62,12 +51,11 @@ BEGIN
         SET out_user_id = NULL;
 
     ELSE
-        -- --- Hash the Password ---
-        -- Using SHA2 with a 256-bit hash length. Ensure your password_hash column is long enough (VARCHAR(64) for hex representation).
-        -- If password_hash is VARCHAR(255) as in the schema, this is fine.
+        -- --- Hash Password ---
+        -- Using SHA2 with a 256-bit hash length.
         SET v_hashed_password = SHA2(p_password, 256);
 
-        -- --- Insert the New User ---
+        -- --- Insert New User ---
         INSERT INTO Users (
             username,
             email,
@@ -80,15 +68,15 @@ BEGIN
             hostel_block,
             room_number,
             profile_picture_url
-            -- registration_date defaults to CURRENT_TIMESTAMP
-            -- account_status defaults to 'active'
+            registration_date defaults to CURRENT_TIMESTAMP
+            account_status defaults to 'active'
         ) VALUES (
             p_username,
             p_email,
             v_hashed_password,
             p_first_name,
             p_last_name,
-            NULLIF(p_roll_number, ''), -- Insert NULL if optional field is empty
+            NULLIF(p_roll_number, ''), 
             NULLIF(p_phone_number, ''),
             NULLIF(p_hostel_name, ''),
             NULLIF(p_hostel_block, ''),
@@ -96,15 +84,14 @@ BEGIN
             NULLIF(p_profile_picture_url, '')
         );
 
-        -- --- Check if Insertion was Successful (Handler didn't set a duplicate message) ---
+        -- --- Check if Insertion was Successful ---
         IF duplicate_key = 0 THEN
             -- Get the user_id of the newly inserted row
             SET out_user_id = LAST_INSERT_ID();
             SET out_message = 'User registered successfully.';
         END IF;
-        -- If duplicate_key = 1, the handler already set the error message and out_user_id
 
-    END IF; -- End of input validation check
+    END IF; 
 
 END //
 
@@ -113,19 +100,15 @@ DELIMITER ;
 
 -- Authenticate User--------------------------------------
 
--- Change the delimiter to handle the procedure body
 DELIMITER //
 
--- Drop the procedure if it already exists to allow recreation
 DROP PROCEDURE IF EXISTS AuthenticateUser;
 
--- Create the stored procedure
 CREATE PROCEDURE AuthenticateUser(
-    -- Input parameters
     IN p_username VARCHAR(50),
     IN p_password VARCHAR(255), -- Raw password from user input
 
-    -- Output parameters for feedback
+    -- Output parameters
     OUT out_user_id INT,
     OUT out_first_name VARCHAR(50),
     OUT out_last_name VARCHAR(50),
@@ -201,7 +184,64 @@ BEGIN
 
 END //
 
--- Reset the delimiter back to semicolon
+DELIMITER ;
+
+
+-- UpdateUserProfile --------------------------------------
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS UpdateUserProfile;
+
+CREATE PROCEDURE UpdateUserProfile(
+    IN p_user_id INT,                   
+    IN p_phone_number VARCHAR(15),      -- New phone number 
+    IN p_hostel_name VARCHAR(50),       -- New hostel name 
+    IN p_hostel_block VARCHAR(5),       -- New hostel block 
+    IN p_room_number VARCHAR(10),       -- New room number
+    IN p_profile_picture_url VARCHAR(255), -- New profile
+
+    OUT out_message VARCHAR(255)     
+)
+BEGIN
+    -- check if the user exists
+    DECLARE v_rows_affected INT DEFAULT 0;
+
+    -- Ensure user_id is provided
+    IF p_user_id IS NULL THEN
+        SET out_message = 'Error: User ID must be provided.';
+    ELSE
+        -- updating
+        UPDATE Users
+        SET
+            phone_number        = NULLIF(p_phone_number, ''), 
+            hostel_name         = NULLIF(p_hostel_name, ''),
+            hostel_block        = NULLIF(p_hostel_block, ''),
+            room_number         = NULLIF(p_room_number, ''),
+            profile_picture_url = NULLIF(p_profile_picture_url, '')
+        WHERE
+            user_id = p_user_id;
+
+        -- Check how many rows were affected by the UPDATE
+        SET v_rows_affected = ROW_COUNT();
+
+        -- Set the output message based on whether the update happened
+        IF v_rows_affected = 0 THEN
+            -- Check if the user actually exists
+            IF (SELECT COUNT(*) FROM Users WHERE user_id = p_user_id) = 0 THEN
+                 SET out_message = 'Error: User ID not found.';
+            ELSE
+                 -- User exists, but no data was changed 
+                 SET out_message = 'Profile update processed, but no data was changed.';
+            END IF;
+        ELSEIF v_rows_affected = 1 THEN
+            SET out_message = 'User profile updated successfully.';
+        ELSE
+            SET out_message = 'Warning: Multiple user profiles were updated. Please check data integrity.';
+        END IF;
+
+    END IF;
+END //
+
 DELIMITER ;
 
 
@@ -282,20 +322,14 @@ DELIMITER ;
 
 
 -- GetUserProfile --------------------------------------
--- Change the delimiter to handle the procedure body
 DELIMITER //
 
--- Drop the procedure if it already exists to allow recreation
 DROP PROCEDURE IF EXISTS GetUserProfile; //
 
--- Create the stored procedure
 CREATE PROCEDURE GetUserProfile(
-    -- Input parameter
-    IN p_user_id INT -- The ID of the user whose profile is requested
+    IN p_user_id INT 
 )
 BEGIN
-    -- Select the relevant profile details for the specified user
-    -- This procedure directly outputs the result set of the SELECT query
     SELECT
         user_id,
         username,
@@ -315,10 +349,6 @@ BEGIN
     WHERE
         user_id = p_user_id;
 
-    -- No explicit output parameters needed here; the result set is the output.
-    -- If p_user_id does not exist, an empty result set will be returned.
-
 END //
 
--- Reset the delimiter back to semicolon
 DELIMITER ; //

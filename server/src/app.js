@@ -1,8 +1,10 @@
-// src/app.js
 import express, { json, urlencoded } from 'express';
 import { config } from 'dotenv';
-import apiRouter from './routes'; 
-import errorMiddleware from './middleware/error.middleware'; // Will be created later
+import apiRouter from './routes/index.js';
+import cors from 'cors'; 
+import errorMiddleware from './middleware/error.middleware.js'; // Will be created later
+import cookieParser from 'cookie-parser';
+
 
 config();
 
@@ -12,8 +14,9 @@ const app = express();
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
-const cors = require('cors');
 app.use(cors());
+
+app.use(cookieParser());
 
 // --- Middleware  ---
 app.use((req, res, next) => {

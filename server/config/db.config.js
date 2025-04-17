@@ -1,4 +1,3 @@
-// config/db.config.js
 import { createPool } from 'mysql2/promise';
 import { config } from 'dotenv';
 
@@ -23,5 +22,7 @@ pool.getConnection()
         console.error('[ERROR] Connecting to database:', err.message);
         // process.exit(1);
     });
+
+    
 
 export default pool;

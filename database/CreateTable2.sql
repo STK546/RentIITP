@@ -65,12 +65,12 @@ CREATE TABLE Rentals (
     FOREIGN KEY (renter_id) REFERENCES Users(user_id) ON DELETE RESTRICT
 );
 
--- Notifications Table (Removed message-related types)
+-- Notifications Table 
 CREATE TABLE Notifications (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    related_entity_id INT NOT NULL, -- Likely refers to rental_id
-    notification_type VARCHAR(50) NOT NULL, -- e.g., rental_request, rental_confirmed, etc.
+    related_entity_id INT NOT NULL,
+    notification_type VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
     created_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
@@ -83,5 +83,5 @@ CREATE TABLE WishlistItems (
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (item_id) REFERENCES Items(item_id) ON DELETE CASCADE,
-    UNIQUE (user_id, item_id) -- Prevents adding the same item to a user's wishlist multiple times
+    UNIQUE (user_id, item_id) 
 );

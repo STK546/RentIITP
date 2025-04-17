@@ -34,7 +34,6 @@ BEGIN
         SET out_message = CONCAT('Error: Database error occurred - ', @errno, ': ', @text);
     END;
 
-    -- Begin the labeled block here
     THIS_PROC: BEGIN
 
         SET out_rental_id = NULL;
