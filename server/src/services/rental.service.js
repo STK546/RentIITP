@@ -1,4 +1,6 @@
 import pool from '../../config/db.config.js';
+import * as notificationService from './notification.service.js';
+
 
 
 async function requestRental(renterId, itemId, startDate, endDate) {
@@ -20,18 +22,97 @@ async function requestRental(renterId, itemId, startDate, endDate) {
 async function updateRentalStatus(rentalId, newStatus, actingUserId) {
     const sql = `CALL UpdateRentalStatus(?, ?, ?, @out_message)`;
     const params = [rentalId, newStatus, actingUserId];
+    let resultMessage = '';
 
     try {
-        await pool.execute(sql, params);
+        const [updateResults] = await pool.query(sql, params);
+        const [outParamsUpdate] = await pool.query('SELECT @out_message AS message');
+        resultMessage = outParamsUpdate[0].message;
 
-        const [outParams] = await pool.execute('SELECT @out_message AS message');
+        if (resultMessage.toLowerCase().startsWith('rental status updated successfully')) {
+            const [rentalDetails] = await pool.query(
+                `SELECT r.renter_id, i.owner_id, i.name AS item_name
+                 FROM Rentals r JOIN Items i ON r.item_id = i.item_id
+                 WHERE r.rental_id = ?`, [rentalId]
+            );
 
-        return outParams[0]; // { message: ? }
+            if (rentalDetails.length > 0) {
+                const { renter_id, owner_id, item_name } = rentalDetails[0];
+                let notificationUserId = null;
+                let notificationMessage = '';
+
+                switch (newStatus.toLowerCase()) {
+                    case 'confirmed':
+                        notificationUserId = renter_id;
+                        notificationMessage = `Your rental request for "${item_name}" has been confirmed by the owner.`;
+                        break;
+                    case 'rejected':
+                        notificationUserId = renter_id;
+                        notificationMessage = `Your rental request for "${item_name}" was rejected by the owner.`;
+                        break;
+                    case 'cancelled':
+                        notificationUserId = (actingUserId === renter_id) ? owner_id : renter_id;
+                        const cancellerRole = (actingUserId === renter_id) ? 'renter' : 'owner';
+                        notificationMessage = `The rental for "${item_name}" was cancelled by the ${cancellerRole}.`;
+                        break;
+                    case 'active':
+                        notificationUserId = renter_id;
+                        notificationMessage = `Your rental period for "${item_name}" has started.`;
+                        break;
+                    case 'completed':
+                        await notificationService.createNotification(renter_id, rentalId, 'rental_completed', `Your rental of "${item_name}" is now complete.`);
+                        await notificationService.createNotification(owner_id, rentalId, 'rental_completed_owner', `The rental of your item "${item_name}" by user ${renter_id} is complete.`);
+                        notificationUserId = null;
+                        break;
+                }
+
+                if (notificationUserId && notificationMessage) {
+                    try {
+                        await notificationService.createNotification(
+                            notificationUserId,
+                            rentalId,
+                            `rental_${newStatus}`,
+                            notificationMessage
+                        );
+                        console.log(`Notification created for user ${notificationUserId} regarding rental ${rentalId} status update to ${newStatus}`);
+                    } catch (notiError) {
+                        console.error(`Failed to create notification for rental ${rentalId} status update:`, notiError.message);
+                    }
+                }
+            } else {
+                console.error(`Could not retrieve details for rental ${rentalId} to create notification.`);
+            }
+        }
+
+        return { message: resultMessage };
+
     } catch (error) {
         console.error('Error in updateRentalStatus service:', error);
-        throw new Error('Database error updating rental status.');
+        if (resultMessage) {
+            return { message: `Update may have failed. ${resultMessage}. Error: ${error.message}` };
+        } else {
+            throw new Error('Database error updating rental status.');
+        }
     }
 }
+
+
+
+// async function updateRentalStatus(rentalId, newStatus, actingUserId) {
+//     const sql = `CALL UpdateRentalStatus(?, ?, ?, @out_message)`;
+//     const params = [rentalId, newStatus, actingUserId];
+
+//     try {
+//         await pool.execute(sql, params);
+
+//         const [outParams] = await pool.execute('SELECT @out_message AS message');
+
+//         return outParams[0]; // { message: ? }
+//     } catch (error) {
+//         console.error('Error in updateRentalStatus service:', error);
+//         throw new Error('Database error updating rental status.');
+//     }
+// }
 
 
 async function getUserRentals(userId, role) {

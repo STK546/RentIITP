@@ -787,3 +787,62 @@ mysql> SELECT @rental_id, @message_out;
 
 mysql>
 
+
+
+mysql>
+mysql> CALL CreateNotification(
+10,         ->     10,                  -- p_user_id (Recipient: Neha Mishra, renter of rental 5)
+    ->     5,                   -- p_related_entity_id (The rental_id)
+    ->   'renta    'rental_confirmed',  -- p_notification_type
+our rent    ->     'Your rental request for Casio FX-991ES Plus Calculator has been confirmed.', -- p_message
+    ->     @new_noti_id,
+    ->     @message
+    -> );'
+
+-- Check the results
+SELECT @new_noti_id, @message;Query OK, 1 row affected (0.01 sec)
+
+mysql>
+mysql> -- Check the results
+mysql> SELECT @new_noti_id, @message;
++--------------+------------------------------------+
+| @new_noti_id | @message                           |
++--------------+------------------------------------+
+|           23 | Notification created successfully. |
++--------------+------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+mysql>
+put varimysql> -- Declare output variable
+mysql> SET @message = '';
+Get notQuery OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> -- Get notifications for user_id = 10 (Neha Mishra)
+mysql> CALL GetUserNotifications(10, @message);
+e list of notifications will be displayed directly by the client/tool
+
+-+-----------------+-------------------+-------------------+----------------------------------------------------------------------------+---------------------+
+- Check| notification_id | related_entity_id | notification_type | message                                                                    | created_timestamp   |
++-----------------+-------------------+-------------------+----------------------------------------------------------------------------+---------------------+
+|              23 |                 5 | rental_confirmed  | Your rental request for Casio FX-991ES Plus Calculator has been confirmed. | 2025-04-17 19:28:06 |
+|               8 |                 5 | rental_confirmed  | Your rental request for Casio FX-991ES Plus Calculator has been confirmed. | 2025-04-17 01:08:14 |
++-----------------+-------------------+-------------------+----------------------------------------------------------------------------+---------------------+
+2 rows in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> -- The list of notifications will be displayed directly by the client/tool
+mysql>
+mysql> -- Check the message (should indicate success if user 10 exists)
+@messagmysql> SELECT @message;
++---------------------------------------+
+| @message                              |
++---------------------------------------+
+| Successfully retrieved notifications. |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
