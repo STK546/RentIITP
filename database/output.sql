@@ -1187,3 +1187,649 @@ Empty set (0.00 sec)
 Query OK, 0 rows affected (0.00 sec)
 
 mysql>
+
+
+mysql>
+mysql>
+mysql> -- Declare output variable
+mysql> SET @message = '';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Example 1: Update price and condition for item_id = 1 (owned by user 1)
+mysql> LL UCALL UpdateItemDetails(
+    ->     1,          -- p_item_id
+1,          ->     1,          -- p_acting_user_id (MUST be the owner)
+    ->  NULL    NULL,       -- p_category_id (Not changing)
+  NULL,         ->     NULL,       -- p_name (Not changing)
+L,        ->     NULL,       -- p_description (Not changing)
+,      -    ->     12.50,      -- p_rental_price (New price)
+ULL,       --    ->     NULL,       -- p_rental_unit (Not changing)
+fair',      ->     'fair',     -- p_item_condition (New condition)
+    ->     NULL,       -- p_location_description (Not changing)
+  NULL,       -- p_    ->     NULL,       -- p_max_rental_duration (Not changing)
+    @me    -> ssage
+)    @message
+;
+SEL    -> );
+ECT @message; -- Should be successful
+
+-- Example 2: Clear location and max duration for item_id = 2 (owned by user 2)
+CALL UpdateItemDetails(
+    2,          -- p_item_id
+    2,          -- p_acting_user_id
+    NULL, NULL, NULL, NULL, NULL, NULL,
+    '',         -- p_location_description (Pass empty string to set NULL)
+    NULL,Query OK, 1 row affected (0.01 sec)
+
+       -mysql> SELECT @message; -- Should be successful
+- p_max_rental+---------------------------------------------+
+| @message                                    |
++---------------------------------------------+
+| Item details update processed successfully. |
++---------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 2: Clear location and max duration for item_id = 2 (owned by user 2)
+on (Pamysql> CALL UpdateItemDetails(
+    ->     2,          -- p_item_id
+ss NUL    ->     2,          -- p_acting_user_id
+    ->     NULL, NULL, NULL, NULL, NULL, NULL,
+    ->     '',         -- p_location_description (Pass empty string to set NULL)
+    ->     NULL,       -- p_max_rental_duration (Pass NULL to set NULL)
+  @message
+);
+    ->     @message
+    -> );
+SELECT @message; -- Should be successful
+
+-- Example 3: Attempt update by wrong user (user 3 tries to update item 1)
+CALL UpdateItemDetails(
+    1,          -- p_item_idQuery OK, 1 row affected (0.01 sec)
+
+mysql> SELECT @message; -- Should be successful
+
+    3,         +---------------------------------------------+
+| @message                                    |
++---------------------------------------------+
+| Item details update processed successfully. |
++---------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 3: Attempt update by wrong user (user 3 tries to update item 1)
+ -- p_amysql> CALL UpdateItemDetails(
+cting_u    ->     1,          -- p_item_id
+ser_id     ->     3,          -- p_acting_user_id (Incorrect owner)
+ NULL    ->     NULL, 'New Name', NULL, NULL, NULL, NULL, NULL, NULL,
+ @message
+);
+S    ->     @message
+    -> );
+ELECT @message; -- ShoulQuery OK, 1 row affected (0.00 sec)
+
+mysql> SELECT @message; -- Should show 'Error: Permission denied...'
+
+-- Example 4: Try to+---------------------------------------------------------------+
+| @message                                                      |
++---------------------------------------------------------------+
+| Error: Permission denied. You are not the owner of this item. |
++---------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 4: Try to update non-existent item
+L Updamysql> teItemDCALL UpdateItemDetails(
+9,          ->     999,        -- p_item_id
+            ->     1,          -- p_acting_user_id
+    ->     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+@message
+);
+SELEC    ->     @message
+T @mes    -> );
+sage; -- Should show 'Error: Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message; -- Should show 'Error: Item ID not found.'
+
+-- Declare out+---------------------------+
+| @message                  |
++---------------------------+
+| Error: Item ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql>
+mysql> -- Declare output variables (initialize for each call or reuse)
+T @newmysql> SET @new_item_id = NULL;
+message = '';
+
+-Query OK, 0 rows affected (0.00 sec)
+
+mysql> SET @message = '';
+- Example 1: List an Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Example 1: List an item WITH a primary image
+mysql> -- Assume user_id=1 and category_id=6 exist
+istItem(
+    1mysql> CALL ListItem(
+    ->     1,                          -- p_owner_id (Aman Kumar)
+                    ->     6,                          -- p_category_id (Room Essentials)
+    ->     'Used Study Lamp',          -- p_name
+Working    ->     'Working study lamp, adjustable neck. Bulb included.', -- p_description
+            ->     10.00,                      -- p_rental_price
+  'day',    ->     'day',                      -- p_rental_unit
+od',        ->     'good',                     -- p_item_condition
+    ->     'CV Raman, Ask Room 101',   -- p_location_description
+    14,     ->     14,                         -- p_max_rental_duration (days)
+ 'url/st    ->     'url/studylamp_primary.jpg',-- p_primary_image_url
+w_item_    ->     @new_item_id,               -- OUT variable for new item ID
+ssage       ->     @message                    -- OUT variable for status message
+;
+
+-- C    -> );
+heck results after calling
+SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+-- Expected: A new item ID (e.g., 22) and 'Item listed successfully. Primary image added.'
+
+-- ----------------------------------------------------
+
+-- Example 2: List an item WITHOUT providing a primary image
+-- Assume user_id=2 and category_id=2 exist
+CALL ListItem(
+    2,                          -- p_owner_id (Priya Sharma)
+    2,                          -- p_category_id (BQuery OK, 0 rows affected (0.01 sec)
+
+ooks)
+mysql>
+mysql> -- Check results after calling
+    'Operating mysql> SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+Concepts',-- p_+-----------+------------------------------------------------+
+| NewItemID | ResultMessage                                  |
++-----------+------------------------------------------------+
+|        22 | Item listed successfully. Primary image added. |
++-----------+------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> -- Expected: A new item ID (e.g., 22) and 'Item listed successfully. Primary image added.'
+textbookmysql>
+mysql> -- ----------------------------------------------------
+berschatmysql>
+mysql> -- Example 2: List an item WITHOUT providing a primary image
+in, Gagmysql> -- Assume user_id=2 and category_id=2 exist
+ne. Goomysql> CALL ListItem(
+    -> d for C    2,                          -- p_owner_id (Priya Sharma)
+    ->     2,                          -- p_category_id (Books)
+SE cou    ->     'Operating System Concepts',-- p_name
+    ->     '8th Edition textbook by Silberschatz, Galvin, Gagne. Good for CSE courses.', -- p_description
+    ->     40.00,                      -- p_rental_price
+  'week',           ->     'week',                     -- p_rental_unit
+ir',        ->     'fair',                     -- p_item_condition
+   NUL    -> L,        NULL,                       -- p_location_description (No location provided)
+LL,      ->     NULL,                       -- p_max_rental_duration (No limit)
+   NULL,        ->     NULL,                       -- p_primary_image_url (No image provided)
+@new_i    ->     @new_item_id,
+    ->     @message
+;
+
+-- Check re    -> );
+sults after calling
+SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+-- Expected: A new item ID (e.g., 23) and 'Item listed successfully.'
+
+-- ----------------------------------------------------
+
+-- Example 3: Attempt to list with a non-existent Owner ID
+CALL ListItem(
+    999,    Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> -- Check results after calling
+                mysql> SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+    -- p_owner_+-----------+---------------------------+
+| NewItemID | ResultMessage             |
++-----------+---------------------------+
+|        23 | Item listed successfully. |
++-----------+---------------------------+
+1 row in set (0.00 sec)
+
+mysql> -- Expected: A new item ID (e.g., 23) and 'Item listed successfully.'
+ssuming User Imysql>
+mysql> -- ----------------------------------------------------
+mysql>
+mysql> -- Example 3: Attempt to list with a non-existent Owner ID
+oes NOmysql> CALL ListItem(
+    -> T exist    999,                        -- p_owner_id (Assuming User ID 999 does NOT exist)
+    ->     1,                          -- p_category_id
+  'Test    ->     'Test Item Fail Owner', 'Desc', 5.00, 'day', 'new', NULL, NULL, NULL,
+ew_item    ->     @new_item_id,
+  @mess    ->     @message
+ck resul    -> );
+ts after calling
+SELECT @new_iteQuery OK, 1 row affected (0.00 sec)
+
+mysql>
+mysql> -- Check results after calling
+S NewImysql> SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+pected: NULL for N+-----------+--------------------------------------+
+| NewItemID | ResultMessage                        |
++-----------+--------------------------------------+
+|      NULL | Error: Owner User ID does not exist. |
++-----------+--------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> -- Expected: NULL for NewItemID and 'Error: Owner User ID does not exist.'
+mysql>
+mysql> -- ----------------------------------------------------
+le 4: Attempt mysql>
+mysql> -- Example 4: Attempt to list with an invalid (non-positive) price
+ListItmysql> CALL ListItem(
+    ->     3,                          -- p_owner_id (Assuming User ID 3 exists)
+                       -    ->     1,                          -- p_category_id
+est Item Pric    ->     'Test Item Price Fail', 'Desc', -5.00, 'day', 'new', NULL, NULL, NULL,
+  @new_    -> item_i    @new_item_id,
+    ->     @message
+    -> );
+ Check results after calling
+SQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Check results after calling
+mysql> SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+ted: NULL for NewItemID+-----------+--------------------------------------------------------------------------------------------------------------------+
+| NewItemID | ResultMessage
+         |
++-----------+--------------------------------------------------------------------------------------------------------------------+
+|      NULL | Error: Owner ID, Category ID, Name, Description, valid Rental Price, Rental Unit, and Item Condition are required. |
++-----------+--------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> -- Expected: NULL for NewItemID and 'Error: Owner ID, Category ID, Name, Description, valid Rental Price, Rental Unit, and Item Condition are required.'
+--------mysql>
+mysql> -- ----------------------------------------------------
+5: Attmysql>
+mysql> -- Example 5: Attempt to list without a required field (e.g., name)
+LL Lmysql> CALL ListItem(
+    ->     4, 1, NULL, 'Desc', 10.00, 'day', 'new', NULL, NULL, NULL,
+em_id,
+    ->     @new_item_id,
+    ->     @message
+;
+
+-- C    -> );
+ults after calling
+SELQuery OK, 0 rows affected (0.00 sec)
+
+ECT mysql>
+mysql> -- Check results after calling
+mysql> SELECT @new_item_id AS NewItemID, @message AS ResultMessage;
+: NULL for NewIte+-----------+--------------------------------------------------------------------------------------------------------------------+
+| NewItemID | ResultMessage
+         |
++-----------+--------------------------------------------------------------------------------------------------------------------+
+|      NULL | Error: Owner ID, Category ID, Name, Description, valid Rental Price, Rental Unit, and Item Condition are required. |
++-----------+--------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mID anmysql> -- Expected: NULL for NewItemID and 'Error: Owner ID, Category ID, Name, Description, valid Rental Price, Rental Unit, and Item Condition are required.'
+-- Declare outpmysql>
+mysql> -- Declare output variable
+T @mesmysql> SET @message = '';
+1: Mark item_Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Example 1: Mark item_id = 1 as 'rented' (assuming it's currently 'available')
+L Updmysql> CALL UpdateItemAvailability(1, 'rented', @message);
+message; -- Expected: 'Item availability status updated successfully to 'rented'.'
+
+-- Example 2: Mark item_id = 1 back to 'available'
+CALL UpdateItemAvailability(1, 'available', @message);
+SELECT @message; -- Expected: 'Item availability status updated successfully to 'available'.'
+
+-- Example 3: Try setting item_id = 1 to 'avQuery OK, 1 row affected (0.01 sec)
+
+mysql> SELECT @message; -- Expected: 'Item availability status updated successfully to 'rented'.'
+no change)
+CA+------------------------------------------------------------+
+| @message                                                   |
++------------------------------------------------------------+
+| Item availability status updated successfully to 'rented'. |
++------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+LL UpdateItmysql>
+mysql> -- Example 2: Mark item_id = 1 back to 'available'
+mysql> CALL UpdateItemAvailability(1, 'available', @message);
+ilable', @message);
+SELECT @message; -- Expected: 'Item availability status is already set to 'available'. No update performed.'
+
+-- Example 4: Try updating a non-existent item
+CALL UpdateItemAQuery OK, 1 row affected (0.01 sec)
+
+mysql> SELECT @message; -- Expected: 'Item availability status updated successfully to 'available'.'
+, 'unavailable', @messa+---------------------------------------------------------------+
+ge);
+S| @message                                                      |
++---------------------------------------------------------------+
+| Item availability status updated successfully to 'available'. |
++---------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+ELECmysql> -- Example 3: Try setting item_id = 1 to 'available' again (no change)
+mysql> CALL UpdateItemAvailability(1, 'available', @message);
+sage; -- Expected: 'Error: IQuery OK, 1 row affected (0.00 sec)
+
+tem IDmysql> SELECT @message; -- Expected: 'Item availability status is already set to 'available'. No update performed.'
+und.'
+
+-- Example 5: T+------------------------------------------------------------------------------+
+| @message                                                                     |
++------------------------------------------------------------------------------+
+| Item availability status is already set to 'available'. No update performed. |
++------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 4: Try updating a non-existent item
+ry provmysql> CALL UpdateItemAvailability(999, 'unavailable', @message);
+iding invalid status (DQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message; -- Expected: 'Error: Item ID not found.'
+ ENUM error usually)+---------------------------+
+| @message                  |
++---------------------------+
+| Error: Item ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+-- Thmysql> -- Example 5: Try providing invalid status (Database handles ENUM error usually)
+is call mysql> -- This call might raise a direct database error depending on strict modes,
+ procedure mightmysql> -- or the procedure might not even be created if the ENUM doesn't match.
+ALL mysql> -- CALL UpdateItemAvailability(1, 'broken', @message);
+SELECT @mmysql> -- SELECT @message;
+mple 6: Try prmysql>
+mysql> -- Example 6: Try providing NULL status
+CALLmysql> CALL UpdateItemAvailability(1, NULL, @message);
+T @message; -- ExpectQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message; -- Expected: 'Error: Item ID and New Availability Status are required.'
+
+
+
+
+-- Example 1: Get+----------------------------------------------------------+
+| @message                                                 |
++----------------------------------------------------------+
+| Error: Item ID and New Availability Status are required. |
++----------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+ detailsmysql>
+mysql>
+mysql>
+mysql> -- Example 1: Get details for item_id = 1 (Casio Calculator)
+ GetItemDetails(1)mysql> CALL GetItemDetails(1);
+tput: A single row containing all details for +---------+--------------------------------+-------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+----------+----------------+------------------+-----------------+---------------------------+-------------+---------------+----------------------------------+
+| item_id | item_name                      | description                               | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration | owner_id | owner_username | owner_first_name | owner_last_name | owner_email               | category_id | category_name | category_description             |
++---------+--------------------------------+-------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+----------+----------------+------------------+-----------------+---------------------------+-------------+---------------+----------------------------------+
+|       1 | Casio FX-991ES Plus Calculator | Scientific calculator, suitable for exams |        12.50 | day         | fair           | available           | CV Raman Room 101    | 2025-04-17 01:08:03 |                NULL |        1 | aman_b21       | Aman             | Kumar           | aman.kumar_b21@iitp.ac.in |           5 | Stationery    | Drafters, calculators, lab coats |
++---------+--------------------------------+-------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+----------+----------------+------------------+-----------------+---------------------------+-------------+---------------+----------------------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> -- Output: A single row containing all details for item 1, including owner (Aman) and category (Stationery) info.
+ Examplmysql>
+mysql> -- Example 2: Get details for item_id = 9 (Hercules Cycle)
+ GetImysql> CALL GetItemDetails(9);
+ single row containing all deta+---------+-----------------------+---------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+----------+----------------+------------------+-----------------+-----------------------------+-------------+---------------+-----------------------------+
+| item_id | item_name             | description                           | rental_price | rental_unit | item_condition | availability_status | location_description     | date_added          | max_rental_duration | owner_id | owner_username | owner_first_name | owner_last_name | owner_email                 | category_id | category_name | category_description        |
++---------+-----------------------+---------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+----------+----------------+------------------+-----------------+-----------------------------+-------------+---------------+-----------------------------+
+|       9 | Hercules Roadeo Cycle | Gear cycle, suitable for longer rides |        50.00 | day         | good
+| available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |                  30 |        8 | kavita_b23     | Kavita           | Reddy           | kavita.reddy_b23@iitp.ac.in |           3 | Cycles        | Bicycles for campus commute |
++---------+-----------------------+---------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+----------+----------------+------------------+-----------------+-----------------------------+-------------+---------------+-----------------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+ils for mysql> -- Output: A single row containing all details for item 9, including owner (Kavita) and category (Cycles) info.
+xample mysql>
+mysql> -- Example 3: Get details for a non-existent item_id
+etItemDmysql> CALL GetItemDetails(999);
+-- Output: An empty result seEmpty set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> -- Output: An empty result set (no rows returned).
+
+
+
+-- Dmysql>
+mysql>
+mysql>
+mysql> -- Declare output variables
+SET @mysql> SET @new_image_id = NULL;
+T @mesQuery OK, 0 rows affected (0.00 sec)
+
+sage = 'mysql> SET @message = '';
+1: Add a PRIQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Example 1: Add a PRIMARY image to item_id = 1
+mysql>  AddItCALL AddItemImage(
+            ->     1,                          -- p_item_id
+_NEW    ->     'url/item1_NEW_primary.jpg', -- p_image_url
+UE,              ->     TRUE,                       -- p_is_primary
+   @new_image_    ->     @new_image_id,
+ @messa    ->     @message
+- Check results    -> );
+ (any previous primary image for item 1 should now be is_primary=FALSE)
+SELECT @new_image_id, @message;
+
+-- Example 2: Add a NON-primary image to item_id = 1
+CALL AddItemImage(
+    1,                          -- p_item_id
+    'url/item1_extra.jpg',      -- p_image_url
+    FALSE,              Query OK, 0 rows affected (0.00 sec)
+
+mysql> -- Check results (any previous primary image for item 1 should now be is_primary=FALSE)
+-- p_ismysql> SELECT @new_image_id, @message;
+_primary
+    @+---------------+----------------------------------------------+
+| @new_image_id | @message                                     |
++---------------+----------------------------------------------+
+|            30 | Image added successfully. Marked as primary. |
++---------------+----------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> new_ima-- Example 2: Add a NON-primary image to item_id = 1
+ge_id,
+    @memysql> CALL AddItemImage(
+ssage
+)    ->     1,                          -- p_item_id
+;
+-- Ch    ->     'url/item1_extra.jpg',      -- p_image_url
+    ->     FALSE,                      -- p_is_primary
+lts
+SE    ->     @new_image_id,
+    -> LECT    @message
+ @new_    -> );
+image_id, @message;
+
+-- Example 3: Add another PRIMARY image to item_id = 1 (this will make the one from Ex1 non-primary)
+CALL AddItemImage(
+    1,                          -- p_item_id
+    'url/item1_LATEST_primary.png',-Query OK, 0 rows affected (0.01 sec)
+
+mysql> -- Check results
+- p_image_url
+mysql> SELECT @new_image_id, @message;
+    TRUE,                   '+---------------+---------------------------+
+| @new_image_id | @message                  |
++---------------+---------------------------+
+|            31 | Image added successfully. |
++---------------+---------------------------+'
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 3: Add another PRIMARY image to item_id = 1 (this will make the one from Ex1 non-primary)
+imary
+  mysql> CALL AddItemImage(
+  @new_    ->     1,                          -- p_item_id
+image_id,
+        ->     'url/item1_LATEST_primary.png',-- p_image_url
+    ->     TRUE,                       -- p_is_primary
+    ->     @new_image_id,
+e
+);
+--    ->     @message
+    -> );
+results
+SELECT @new_image_id, @message;
+
+-- Example 4: Attempt to add image to non-existent item
+CALL AddItemImage(
+    999,                        -- p_item_id (invalid)
+    'url/some_image.jpg',
+    FALSE,
+    @new_image_id,
+    @message
+);
+-- Check results
+SELECT @Query OK, 0 rows affected (0.01 sec)
+
+mysql> -- Check results
+e; -- Emysql> SELECT @new_image_id, @message;
+xpected: NUL+---------------+----------------------------------------------+
+L and '| @new_image_id | @message                                     |
++---------------+----------------------------------------------+
+|            32 | Image added successfully. Marked as primary. |
++---------------+----------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 4: Attempt to add image to non-existent item
+Error: Item Imysql> CALL AddItemImage(
+D does    ->     999,                        -- p_item_id (invalid)
+st.'
+
+-- Exampl    ->     'url/some_image.jpg',
+ttempt to add wi    ->     FALSE,
+    -> th empty    @new_image_id,
+    ->     @message
+ URL
+    -> );
+CALL AddItemImage(
+    1Query OK, 1 row affected (0.00 sec)
+
+,
+    ''mysql> -- Check results
+,       mysql> SELECT @new_image_id, @message; -- Expected: NULL and 'Error: Item ID does not exist.'
+image_url (emp+---------------+--------------------------------+
+ty)
+   | @new_image_id | @message                       |
++---------------+--------------------------------+
+|          NULL | Error: Item ID does not exist. |
++---------------+--------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 5: Attempt to add with empty URL
+ FALSmysql> CALL AddItemImage(
+    ->     1,
+E,
+       ->     '',                         -- p_image_url (empty)
+ @new_    ->     FALSE,
+    ->     @new_image_id,
+
+);
+--     ->     @message
+    -> );
+Check results
+SELECT @neQuery OK, 0 rows affected (0.00 sec)
+
+mysql> -- Check results
+w_image_id, @mysql> SELECT @new_image_id, @message; -- Expected: NULL and 'Error: Item ID, Image URL, and Is Primary flag are required.'
+
+
+-- Declare output var+---------------+--------------------------------------------------------------+
+| @new_image_id | @message                                                     |
++---------------+--------------------------------------------------------------+
+|          NULL | Error: Item ID, Image URL, and Is Primary flag are required. |
++---------------+--------------------------------------------------------------+
+1 row in set (0.01 sec)
+
+iable
+Smysql>
+mysql>
+mysql>
+mysql> -- Declare output variable
+essage = '';
+
+--mysql> SET @message = '';
+ ExamplQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Example 1: Delete item_id = 21 (Pendrive, owned by user 20), assuming no active/confirmed rentals
+teItem(21, 20,mysql> CALL DeleteItem(21, 20, @message);
+T @message; -- Expected: 'Item deleted successfully...'
+
+-- Example 2: Attempt to delete item_id = 2 (Hero Cycle, owned by user 2) Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT @message; -- Expected: 'Item deleted successfully...'
+s active/confirmed renta+---------------------------------------------------------------------+
+| @message                                                            |
++---------------------------------------------------------------------+
+| Error: Cannot delete item while it has active or confirmed rentals. |
++---------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Example 2: Attempt to delete item_id = 2 (Hero Cycle, owned by user 2) which has active/confirmed rentals (e.g., rental_id=1)
+L DeleteItem(mysql> CALL DeleteItem(2, 2, @message);
+ @message; -- Expected: 'ErrQuery OK, 1 row affected (0.00 sec)
+
+mysql> SELECT @message; -- Expected: 'Error: Cannot delete item while it has active or confirmed rentals.'
+Example 3: Attempt by+---------------------------------------------------------------------+
+| @message                                                            |
++---------------------------------------------------------------------+
+| Error: Cannot delete item while it has active or confirmed rentals. |
++---------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+ wrong umysql>
+mysql> -- Example 3: Attempt by wrong user (user 1 tries to delete item 2 owned by user 2)
+eleteItem(2, mysql> CALL DeleteItem(2, 1, @message);
+CT @message; -- ExpeQuery OK, 1 row affected (0.00 sec)
+cted: ''
+mysql> SELECT @message; -- Expected: 'Error: Permission denied. You are not the owner of this item.'
+xample 4: Att+---------------------------------------------------------------+
+| @message                                                      |
++---------------------------------------------------------------+
+| Error: Permission denied. You are not the owner of this item. |
++---------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>''
+empt to mysql> -- Example 4: Attempt to delete non-existent item
+ Deletmysql> CALL DeleteItem(999, 1, @message);
+LECT @message; -- Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message; -- Expected: 'Error: Item ID not found.''
++---------------------------+
+| @message                  |
++---------------------------+
+| Error: Item ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+

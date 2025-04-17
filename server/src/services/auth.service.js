@@ -1,4 +1,3 @@
-// import { query } from '../../config/db.config.js';
 import pool from '../../config/db.config.js';
 async function registerUser(userData) {
     const {
