@@ -3,7 +3,7 @@ SET @rental_id = NULL;
 SET @message_out = '';
 
 CALL RequestRental(
-    11, 9, '2025-05-10 10:00:00', '2025-05-12 17:00:00',
+    21, 1, '2025-05-10 10:00:00', '2025-05-12 17:00:00',
     @rental_id, @message_out
 );
 SELECT @rental_id, @message_out;
@@ -27,7 +27,7 @@ SELECT @rental_id, @message_out;
 SET @message_out = '';
 
 -- Example: Owner (user_id=1) confirms rental request (rental_id=5)
-CALL UpdateRentalStatus(5, 'confirmed', 1, @message_out);
+CALL UpdateRentalStatus(21, 'confirmed', 32, @message_out);
 SELECT @message_out;
 
 -- Example: Renter (user_id=7) confirms pickup for rental (rental_id=2, currently 'confirmed')

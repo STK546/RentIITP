@@ -586,3 +586,204 @@ Query OK, 0 rows affected (0.00 sec)
 
 mysql>
 
+
+
+
+
+mysql>
+mysql> -- Get rentals for user_id=11 where they are the RENTER
+CALLmysql> CALL GetUserRentals(11, 'renter', @message);
+SELECT @message;
++-----------+---------+------------------------+----------+----------------+---------------------+---------------------+--------------+---------------+
+| rental_id | item_id | item_name              | owner_id | owner_username | start_date          | end_date            | agreed_price | rental_status |
++-----------+---------+------------------------+----------+----------------+---------------------+---------------------+--------------+---------------+
+|        20 |       9 | Hercules Roadeo Cycle  |        8 | kavita_b23     | 2025-05-10 10:00:00 | 2025-05-12 17:00:00 |       150.00 | requested     |
+|        18 |      14 | Lab Coat (Medium Size) |       13 | rohit_b23      | 2025-04-18 13:00:00 | 2025-04-25 13:00:00 |       100.00 | requested     |
+|         6 |       9 | Hercules Roadeo Cycle  |        8 | kavita_b23     | 2025-04-17 15:00:00 | 2025-04-24 15:00:00 |       350.00 | requested     |
++-----------+---------+------------------------+----------+----------------+---------------------+---------------------+--------------+---------------+
+3 rows in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> SELECT @message;
++-------------------------------------------+
+| @message                                  |
++-------------------------------------------+
+| Successfully retrieved rentals as renter. |
++-------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> CALL GetUserRentals(1, 'owner', @message);
+T @message;
+
++-----------+---------+--------------------------------+-----------+-----------------+---------------------+---------------------+--------------+---------------+
+| rental_id | item_id | item_name                      | renter_id | renter_username | start_date          | end_date            | agreed_price | rental_status |
++-----------+---------+--------------------------------+-----------+-----------------+---------------------+---------------------+--------------+---------------+
+|        21 |       1 | Casio FX-991ES Plus Calculator |        32 | sarthak         | 2025-06-01 10:00:00 | 2025-06-03 17:00:00 |        30.00 | requested     |
+|        10 |       6 | Raspberry Pi 4 Model B (4GB)   |        12 | pooja_m21       | 2025-04-20 10:00:00 | 2025-05-04 10:00:00 |       150.00 | requested     |
+|         5 |       1 | Casio FX-991ES Plus Calculator |        10 | neha_b21        | 2025-04-18 09:00:00 | 2025-04-20 09:00:00 |        20.00 | requested     |
++-----------+---------+--------------------------------+-----------+-----------------+---------------------+---------------------+--------------+---------------+
+3 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> SELECT @message;
++------------------------------------------+
+| @message                                 |
++------------------------------------------+
+| Successfully retrieved rentals as owner. |
++------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> CALL GetUserRentals(1, 'OWNER', @message);
+ECT @message;+-----------+---------+--------------------------------+-----------+-----------------+---------------------+---------------------+--------------+---------------+
+| rental_id | item_id | item_name                      | renter_id | renter_username | start_date          | end_date            | agreed_price | rental_status |
++-----------+---------+--------------------------------+-----------+-----------------+---------------------+---------------------+--------------+---------------+
+|        21 |       1 | Casio FX-991ES Plus Calculator |        32 | sarthak         | 2025-06-01 10:00:00 | 2025-06-03 17:00:00 |        30.00 | requested     |
+|        10 |       6 | Raspberry Pi 4 Model B (4GB)   |        12 | pooja_m21       | 2025-04-20 10:00:00 | 2025-05-04 10:00:00 |       150.00 | requested     |
+|         5 |       1 | Casio FX-991ES Plus Calculator |        10 | neha_b21        | 2025-04-18 09:00:00 | 2025-04-20 09:00:00 |        20.00 | requested     |
++-----------+---------+--------------------------------+-----------+-----------------+---------------------+---------------------+--------------+---------------+
+3 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message;CALL GetUserRentals(1, 'admin', @message);
+LECT @mess+------------------------------------------+
+| @message                                 |
++------------------------------------------+
+| Successfully retrieved rentals as owner. |
++------------------------------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message; -- Shows 'Error: Invalid role specified...'
++---------------------------------------------------------+
+| @message                                                |
++---------------------------------------------------------+
+| Error: Invalid role specified. Use 'renter' or 'owner'. |
++---------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> -- Example of non-existent user
+mysql> CALL GetUserRentals(999, 'renter', @message);
+CT @message; -- Shows 'Error: UsQuery OK, 1 row affected (0.01 sec)
+
+mysql> SELECT @message; -- Shows 'Error: User ID not found.'
++---------------------------+
+| @message                  |
++---------------------------+
+| Error: User ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+
+
+1 row in set (0.00 sec)
+
+mysql> CALL UpdateRentalStatus(3, 'completed', 7, @message_out);
+age_out;
+
+CALL UpdateRentalStatus(4, 'cQuery OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT @message_out;
+ancelled', 14, @message+-----------------------------------------------+
+| @message_out                                  |
++-----------------------------------------------+
+| Status is already set to the requested value. |
++-----------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> CALL UpdateRentalStatus(4, 'cancelled', 14, @message_out);
+CT @message_out; --Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Shows error message
++---------------------------------------------------------------------------------+
+| @message_out                                                                    |
++---------------------------------------------------------------------------------+
+| Error: Invalid status change from 'active' to 'cancelled' or permission denied. |
++---------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql>
+mysql> CALL UpdateRentalStatus(2, 'active', 7, @message_out);
+ECT @message_out;Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out;
++-----------------------------------------------+
+| @message_out                                  |
++-----------------------------------------------+
+| Status is already set to the requested value. |
++-----------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> CALL UpdateRentalStatus(21, 'confirmed', 32, @message_out);
+T @message_out;Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out;
++------------------------------------------------------------------------------------+
+| @message_out                                                                       |
++------------------------------------------------------------------------------------+
+| Error: Invalid status change from 'requested' to 'confirmed' or permission denied. |
++------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+
+
+
+mysql> SET @rental_id = NULL;
+message_out = Query OK, 0 rows affected (0.00 sec)
+
+mysql> SET @message_out = '';
+LL RQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> CALL RequestRental(
+    ->     11, 9, '2025-05-10 10:00:00', '2025-05-12 17:00:00',
+    ->     @rental_id, @message_out
+    -> );
+rental_id, @message_out;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT @rental_id, @message_out;
++------------+--------------------------------+
+| @rental_id | @message_out                   |
++------------+--------------------------------+
+|         22 | Rental requested successfully. |
++------------+--------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
+mysql> SET @rental_id = NULL;
+SET @messageQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SET @message_out = '';
+LL RQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> CALL RequestRental(
+    ->     21, 1, '2025-05-10 10:00:00', '2025-05-12 17:00:00',
+    ->     @rental_id, @message_out
+;
+SELECT @rental_id, @m    -> );
+essage_out;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT @rental_id, @message_out;
++------------+--------------------------------+
+| @rental_id | @message_out                   |
++------------+--------------------------------+
+|         23 | Rental requested successfully. |
++------------+--------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+
