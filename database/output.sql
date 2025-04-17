@@ -846,3 +846,344 @@ mysql> -- Check the message (should indicate success if user 10 exists)
 1 row in set (0.00 sec)
 
 mysql>
+
+mysql>
+mysql> -- Reset the delimiter back to semicolon
+mysql> DELIMITER ; //
+mysql> CALL GetItemsByCategory(1, NULL, NULL, NULL);
++---------+----------+-------------+------------------------------+------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | name                         | description                              | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration |
++---------+----------+-------------+------------------------------+------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+|      12 |       11 |           1 | Logitech M170 Wireless Mouse | Simple wireless mouse                    |        10.00 | day         | like new       | available           | APJ Kalam Room 225   | 2025-04-17 01:08:03 |                  10 |
+|      21 |       20 |           1 | Sandisk 64GB Pendrive        | USB 3.0 Pendrive                         |        15.00 | week        | like new       | available           | APJ Kalam Room 240   | 2025-04-17 01:08:03 |                  30 |
+|      17 |       16 |           1 | TP-Link Wi-Fi Router         | Basic N300 Wi-Fi Router                  |        20.00 | day         | good           | rented              | CV Raman Room 130    | 2025-04-17 01:08:03 |                  15 |
+|       3 |        3 |           1 | Boat Rockerz 450 Headphones  | Wireless Bluetooth headphones, good bass |        30.00 | day         | like new       | available           | Aryabhatta Room 303  | 2025-04-17 01:08:03 |                   5 |
+|       6 |        1 |           1 | Raspberry Pi 4 Model B (4GB) | Mini computer for projects               |        75.00 | week        | like new       | available           | CV Raman Room 101    | 2025-04-17 01:08:03 |                  60 |
++---------+----------+-------------+------------------------------+------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+5 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL GetItemsByCategory(3, 'available', NULL, NULL);
++---------+----------+-------------+------------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | name                   | description                                    | rental_price | rental_unit | item_condition | availability_status | location_description     | date_added          | max_rental_duration |
++---------+----------+-------------+------------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+|       2 |        2 |           3 | Hero Sprint Cycle      | Basic cycle, good condition, recently serviced |        25.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |                  30 |
+|       9 |        8 |           3 | Hercules Roadeo Cycle  | Gear cycle, suitable for longer rides          |        50.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |                  30 |
+|      18 |       17 |           3 | Skates (Roller Blades) | Size 8 Roller Blades                           |        60.00 | day         | good           | available           | APJ Kalam Room 235       | 2025-04-17 01:08:03 |                   3 |
++---------+----------+-------------+------------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+3 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL GetItemsByCategory(2, NULL, NULL, 40.00);
++---------+----------+-------------+---------------------------------+-------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | name                            | description | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration |
++---------+----------+-------------+---------------------------------+-------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+|      10 |        9 |           2 | Concepts of Physics by HC Verma | Vol 1 Only  |        30.00 | week        | good           | available           | Aryabhatta Room 322  | 2025-04-17 01:08:03 |                  90 |
++---------+----------+-------------+---------------------------------+-------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL GetItemsByCategory(6, NULL, 50.00, NULL);
++---------+----------+-------------+-------------------+---------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | name              | description                           | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration |
++---------+----------+-------------+-------------------+---------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+|      15 |       14 |           6 | Small Room Cooler | Personal air cooler, decent condition |       100.00 | week        | fair           | available           | APJ Kalam Room 230   | 2025-04-17 01:08:03 |                  30 |
++---------+----------+-------------+-------------------+---------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+
+
+
+
+mysql> DELIMITER ; //
+mysql> CALL SearchItems('cycle', NULL, NULL, NULL, NULL);
++---------+----------+-------------+---------------+----------------+-----------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | category_name | owner_username | name                  | description                                    | rental_price | rental_unit | item_condition | availability_status | location_description     | date_added          | max_rental_duration |
++---------+----------+-------------+---------------+----------------+-----------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+|       2 |        2 |           3 | Cycles        | priya_b22      | Hero Sprint Cycle     | Basic cycle, good condition, recently serviced |        25.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |                  30 |
+|       9 |        8 |           3 | Cycles        | kavita_b23     | Hercules Roadeo Cycle | Gear cycle, suitable for longer rides          |        50.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |                  30 |
++---------+----------+-------------+---------------+----------------+-----------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+2 rows in set (0.02 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> CALL SearchItems('calculator', 5, NULL, NULL, NULL);
++---------+----------+-------------+---------------+----------------+--------------------------------+-------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | category_name | owner_username | name                           | description                               | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration |
++---------+----------+-------------+---------------+----------------+--------------------------------+-------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+|       1 |        1 |           5 | Stationery    | aman_b21       | Casio FX-991ES Plus Calculator | Scientific calculator, suitable for exams |        10.00 | day         | good           | available           | CV Raman Room 101    | 2025-04-17 01:08:03 |                   7 |
++---------+----------+-------------+---------------+----------------+--------------------------------+-------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL SearchItems('book', NULL, 'available', NULL, 50.00);
+Empty set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL SearchItems('headphones', NULL, 'available', NULL, NULL);
++---------+----------+-------------+---------------+----------------+-----------------------------+------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | category_name | owner_username | name                        | description                              | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration |
++---------+----------+-------------+---------------+----------------+-----------------------------+------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+|       3 |        3 |           1 | Electronics   | rahul_m20      | Boat Rockerz 450 Headphones | Wireless Bluetooth headphones, good bass |        30.00 | day         | like new       | available           | Aryabhatta Room 303  | 2025-04-17 01:08:03 |                   5 |
++---------+----------+-------------+---------------+----------------+-----------------------------+------------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL SearchItems(NULL, 6, NULL, 50.00, NULL);
++---------+----------+-------------+-----------------+----------------+-------------------+---------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | category_name   | owner_username | name              | description                           | rental_price | rental_unit | item_condition | availability_status | location_description | date_added          | max_rental_duration |
++---------+----------+-------------+-----------------+----------------+-------------------+---------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+|      15 |       14 |           6 | Room Essentials | divya_b21      | Small Room Cooler | Personal air cooler, decent condition |       100.00 | week        | fair           | available           | APJ Kalam Room 230   | 2025-04-17 01:08:03 |                  30 |
++---------+----------+-------------+-----------------+----------------+-------------------+---------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+
+1 row in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CALL SearchItems(NULL, NULL, 'available', NULL, NULL);
++---------+----------+-------------+---------------------+----------------+------------------------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | category_name       | owner_username | name                               | description                                    | rental_price | rental_unit | item_condition | availability_status | location_description     | date_added          | max_rental_duration |
++---------+----------+-------------+---------------------+----------------+------------------------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+|       1 |        1 |           5 | Stationery          | aman_b21       | Casio FX-991ES Plus Calculator     | Scientific calculator, suitable for exams      |        10.00 | day         | good           | available           | CV Raman Room 101        | 2025-04-17 01:08:03 |
+         7 |
+|       2 |        2 |           3 | Cycles              | priya_b22      | Hero Sprint Cycle                  | Basic cycle, good condition, recently serviced |        25.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |
+        30 |
+|       3 |        3 |           1 | Electronics         | rahul_m20      | Boat Rockerz 450 Headphones        | Wireless Bluetooth headphones, good bass       |        30.00 | day         | like new       | available           | Aryabhatta Room 303      | 2025-04-17 01:08:03 |
+         5 |
+|       4 |        4 |           2 | Books               | sneha_b23      | HC Verma Physics Vol 1 & 2         | Standard physics textbooks for JEE/Engg        |        50.00 | week        | fair           | available           | CV Raman Room 105        | 2025-04-17 01:08:03 |
+        90 |
+|       5 |        5 |           6 | Room Essentials     | vikas_b21      | Electric Kettle 1.5L               | Quick water heating for tea/coffee/noodles     |        15.00 | day         | good           | available           | APJ Kalam Room 210       | 2025-04-17 01:08:03 |
+        14 |
+|       6 |        1 |           1 | Electronics         | aman_b21       | Raspberry Pi 4 Model B (4GB)       | Mini computer for projects                     |        75.00 | week        | like new       | available           | CV Raman Room 101        | 2025-04-17 01:08:03 |
+        60 |
+|       7 |        6 |           4 | Sports Equipment    | anisha_m21     | Yonex Badminton Racket Set         | 2 rackets and shuttlecocks, beginner level     |        40.00 | day         | good           | available           | Aryabhatta Room 315      | 2025-04-17 01:08:03 |
+         7 |
+|       9 |        8 |           3 | Cycles              | kavita_b23     | Hercules Roadeo Cycle              | Gear cycle, suitable for longer rides          |        50.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |
+        30 |
+|      10 |        9 |           2 | Books               | sumit_m20      | Concepts of Physics by HC Verma    | Vol 1 Only                                     |        30.00 | week        | good           | available           | Aryabhatta Room 322      | 2025-04-17 01:08:03 |
+        90 |
+|      11 |       10 |           6 | Room Essentials     | neha_b21       | Plastic Bucket & Mug Set           | Standard bathroom bucket and mug               |         5.00 | week        | fair           | available           | CV Raman Room 118        | 2025-04-17 01:08:03 |
+        60 |
+|      12 |       11 |           1 | Electronics         | arjun_b22      | Logitech M170 Wireless Mouse       | Simple wireless mouse                          |        10.00 | day         | like new       | available           | APJ Kalam Room 225       | 2025-04-17 01:08:03 |
+        10 |
+|      13 |       12 |           4 | Sports Equipment    | pooja_m21      | SG Cricket Bat (Kashmir Willow)    | Suitable for tennis ball cricket               |        35.00 | day         | good           | available           | Aryabhatta Room 328      | 2025-04-17 01:08:03 |
+         7 |
+|      14 |       13 |           5 | Stationery          | rohit_b23      | Lab Coat (Medium Size)             | White lab coat for chemistry/biology labs      |        25.00 | week        | like new       | available           | CV Raman Room 125        | 2025-04-17 01:08:03 |
+        90 |
+|      15 |       14 |           6 | Room Essentials     | divya_b21      | Small Room Cooler                  | Personal air cooler, decent condition          |       100.00 | week        | fair           | available           | APJ Kalam Room 230       | 2025-04-17 01:08:03 |
+        30 |
+|      16 |       15 |           2 | Books               | sanjay_m20     | Introduction to Algorithms by CLRS | Standard algorithms textbook                   |        70.00 | week        | good           | available           | Aryabhatta Room 335      | 2025-04-17 01:08:03 |
+        90 |
+|      18 |       17 |           3 | Cycles              | ajay_b23       | Skates (Roller Blades)             | Size 8 Roller Blades                           |        60.00 | day         | good           | available           | APJ Kalam Room 235       | 2025-04-17 01:08:03 |
+         3 |
+|      19 |       18 |           8 | Musical Instruments | rani_m21       | Acoustic Guitar (Beginner)         | Juarez Acoustic Guitar with Bag                |        80.00 | week        | good           | available           | Aryabhatta Room 340      | 2025-04-17 01:08:03 |
+        60 |
+|      20 |       19 |           6 | Room Essentials     | vijay_b21      | Foldable Study Table               | Small wooden foldable table                    |        30.00 | week        | good           | available           | CV Raman Room 135        | 2025-04-17 01:08:03 |
+        90 |
+|      21 |       20 |           1 | Electronics         | deepa_b22      | Sandisk 64GB Pendrive              | USB 3.0 Pendrive                               |        15.00 | week        | like new       | available           | APJ Kalam Room 240       | 2025-04-17 01:08:03 |
+        30 |
++---------+----------+-------------+---------------------+----------------+------------------------------------+------------------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+
+19 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+
+
+
+
+mysql>
+mysql> -- Declare output variable
+T @mesmysql> SET @message_out = '';
+
+-- Try adding Item 5 to User 1's wishlist
+CALL AddToWishlist(1, 5, Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Try adding Item 5 to User 1's wishlist
+mysql> CALL AddToWishlist(1, 5, @message_out);
+ECT @message_out;
+
+-- Try adding Item 5 to User 1's wishlist AGAIN (should trigger duplicate error)
+CALL AddToWishlist(1, 5, @message_out);
+SELECT @message_out; -- Expected: 'Item is already in your wishlist.'
+
+-- Try adding a non-existent Item 999 to User 1's wishlist
+CALL AddToWishlist(1, 999, @message_out);
+SELECT @message_out; -- Expected: 'Error: Item ID not found.'
+
+-- Try adding Item 1 to a non-existent User 999's wishlist
+CALL AddToWishlist(999, 1, @message_out);
+SELECT @message_out; -- Expected: 'Error: User ID not found.'
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT @message_out;
++--------------------------------------+
+| @message_out                         |
++--------------------------------------+
+| Item added to wishlist successfully. |
++--------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Try adding Item 5 to User 1's wishlist AGAIN (should trigger duplicate error)
+mysql> CALL AddToWishlist(1, 5, @message_out);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Expected: 'Item is already in your wishlist.'
++-----------------------------------+
+| @message_out                      |
++-----------------------------------+
+| Item is already in your wishlist. |
++-----------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Try adding a non-existent Item 999 to User 1's wishlist
+mysql> CALL AddToWishlist(1, 999, @message_out);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Expected: 'Error: Item ID not found.'
++---------------------------+
+| @message_out              |
++---------------------------+
+| Error: Item ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Try adding Item 1 to a non-existent User 999's wishlist
+mysql> CALL AddToWishlist(999, 1, @message_out);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Expected: 'Error: User ID not found.'
++---------------------------+
+| @message_out              |
++---------------------------+
+| Error: User ID not found. |
++---------------------------+
+1 row in set (0.00 sec)
+
+
+
+mysql> -- Declare output variable
+T @mesmysql> SET @message_out = '';
+
+-- TryQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Try removing Item 5 from User 1's wishlist (assuming it was added)
+mysql> CALL RemoveFromWishlist(1, 5, @message_out);
+LECT @message_out;
+
+-- Try removing Item 5 from User 1's wishlist AGAIN (should report not found)
+CALL RemoveFromWishlist(1, 5, @message_out);
+SELECT @message_out; -- Expected: 'Item was not found in your wishlist.'
+
+-- Try removing Item 999 (non-existent) from User 1's wishlist
+CALL RemoveFromWishlist(1, 999, @message_out);
+SELECT @message_out; -- Expected:Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT @message_out;
+was not found in your wi+------------------------------------------+
+| @message_out                             |
++------------------------------------------+
+| Item removed from wishlist successfully. |
++------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Try removing Item 5 from User 1's wishlist AGAIN (should report not found)
+mysql> CALL RemoveFromWishlist(1, 5, @message_out);
+y removing Item 1 from User 999's (non-existent) wishlist
+CQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Expected: 'Item was not found in your wishlist.'
+ALL RemoveFromWishlist(99+--------------------------------------+
+| @message_out                         |
++--------------------------------------+
+| Item was not found in your wishlist. |
++--------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Try removing Item 999 (non-existent) from User 1's wishlist
+messagemysql> CALL RemoveFromWishlist(1, 999, @message_out);
+_out);
+SELECT @mQuery OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Expected: 'Item was not found in your wishlist.'
+essage_out; -- +--------------------------------------+
+| @message_out                         |
++--------------------------------------+
+| Item was not found in your wishlist. |
++--------------------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> -- Try removing Item 1 from User 999's (non-existent) wishlist
+ot foundmysql> CALL RemoveFromWishlist(999, 1, @message_out);
+t.'
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT @message_out; -- Expected: 'Item was not found in your wishlist.
++--------------------------------------+
+| @message_out                         |
++--------------------------------------+
+| Item was not found in your wishlist. |
++--------------------------------------+
+1 row in set (0.01 sec)
+
+mysql>
+
+
+mysql> -- Get the wishlist for user ID 1
+LL Gmysql> CALL GetUserWishlist(1);
+-- Get the wishlist for user ID 5
+CA+---------+----------+-------------+------------------------+---------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | name                   | description                           | rental_price | rental_unit | item_condition | availability_status | location_description     | item_listing_date   | max_rental_duration | date_wishlisted     |
++---------+----------+-------------+------------------------+---------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+---------------------+
+|       9 |        8 |           3 | Hercules Roadeo Cycle  | Gear cycle, suitable for longer rides |        50.00 | day         | good           | available           | APJ Kalam Hostel Parking | 2025-04-17 01:08:03 |                  30 | 2025-04-17 01:09:09 |
+|      15 |       14 |           6 | Small Room Cooler      | Personal air cooler, decent condition |       100.00 | week        | fair           | available           | APJ Kalam Room 230       | 2025-04-17 01:08:03 |                  30 | 2025-04-17 01:09:09 |
+|      18 |       17 |           3 | Skates (Roller Blades) | Size 8 Roller Blades                  |        60.00 | day         | good           | available           | APJ Kalam Room 235       | 2025-04-17 01:08:03 |                   3 | 2025-04-17 01:09:09 |
++---------+----------+-------------+------------------------+---------------------------------------+--------------+-------------+----------------+---------------------+--------------------------+---------------------+---------------------+---------------------+
+3 rows in set (0.00 sec)
+
+LL GQuery OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Get the wishlist for user ID 5
+etUserWmysql> CALL GetUserWishlist(5);
+-- Get the wish+---------+----------+-------------+------------------------------------+-----------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+---------------------+
+| item_id | owner_id | category_id | name                               | description                             | rental_price | rental_unit | item_condition | availability_status | location_description | item_listing_date   | max_rental_duration | date_wishlisted     |
++---------+----------+-------------+------------------------------------+-----------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+---------------------+
+|       4 |        4 |           2 | HC Verma Physics Vol 1 & 2         | Standard physics textbooks for JEE/Engg |        50.00 | week        | fair           | available           | CV Raman Room 105    | 2025-04-17 01:08:03 |                  90 | 2025-04-17 01:09:09 |
+|      10 |        9 |           2 | Concepts of Physics by HC Verma    | Vol 1 Only                              |        30.00 | week        | good           | available           | Aryabhatta Room 322  | 2025-04-17 01:08:03 |                  90 | 2025-04-17 01:09:09 |
+|      16 |       15 |           2 | Introduction to Algorithms by CLRS | Standard algorithms textbook            |        70.00 | week        | good           | available           | Aryabhatta Room 335  | 2025-04-17 01:08:03 |                  90 | 2025-04-17 01:09:09 |
++---------+----------+-------------+------------------------------------+-----------------------------------------+--------------+-------------+----------------+---------------------+----------------------+---------------------+---------------------+---------------------+
+3 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Get the wishlist for a user with an empty wishlist (will return empty set)
+ GetUmysql> CALL GetUserWishlist(19); -- Assuming user 19 has no items wishlisted
+t the wishlist fEmpty set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Get the wishlist for a non-existent user ID (will return empty set)
+ALL Gmysql> CALL GetUserWishlist(999);
+Empty set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
