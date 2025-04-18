@@ -17,33 +17,76 @@ const ItemDetails = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showOwnerModal, setShowOwnerModal] = useState(false);
+  const [images, setImages] = useState([]);
+  const [primaryImage, setPrimaryImage] = useState(null);
   const token = localStorage.getItem('token');
 
+  // console.log(selectedItem.item_id)
+  console.log(itemId)
+
+
+
+  // useEffect(()=>{
+  //   console.log("gfhjdfsg")
+  //   const fetchItemImage = async () => {
+  //     try{
+  //       const response = await axios.get(`http://localhost:3000/api/items/${itemId}/images`);
+  //       console.log(response);
+  //       console.log(response.data.item.primary_image_url);
+  //       // setPrimaryImageUrl(response.data.item.primary_image_url);
+  //     }
+  //     catch(err){
+  //       console.error('Error fetching item image:', err);
+  //     }
+  //   }
+  //   fetchItemImage();
+  // },[itemId, token])
+  // console.log("gfhj")
+
+  // console.log(selectedItem.primary_image_url)
+
   useEffect(() => {
-    dispatch(getItem(itemId));
-    checkWishlistStatus();
-  }, [dispatch, itemId]);
-
-  const checkWishlistStatus = async () => {
-    if (!token) return;
-    
-    try {
-      const response = await axios.get('http://localhost:3000/api/wishlist', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true
-      });
-
-      if (response.data?.wishlist) {
-        const isInWishlist = response.data.wishlist.some(item => item.item_id === parseInt(itemId));
-        setIsWishlisted(isInWishlist);
+    const fetchItemImage = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/items/${itemId}/images`);
+        if (response.data?.images) {
+          setImages(response?.data?.images);
+          const primary = response.data.images.find(img => img.is_primary === 1);
+          setPrimaryImage(primary || response.data.images[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching item images:', err);
       }
-    } catch (err) {
-      console.error('Error checking wishlist status:', err);
+    };
+
+    const checkWishlistStatus = async () => {
+      if (!token) return;
+      
+      try {
+        const response = await axios.get('http://localhost:3000/api/wishlist', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        });
+  
+        if (response.data?.wishlist) {
+          const isInWishlist = response.data.wishlist.some(item => item.item_id === parseInt(itemId));
+          setIsWishlisted(isInWishlist);
+        }
+      } catch (err) {
+        console.error('Error checking wishlist status:', err);
+      }
+    };
+
+    if (itemId) {
+      dispatch(getItem(itemId));
+      fetchItemImage();
+      checkWishlistStatus();
     }
-  };
+  }, [dispatch, itemId, token]);
+
 
   const handleWishlistToggle = async () => {
     if (!token) {
@@ -102,6 +145,11 @@ const ItemDetails = () => {
       return;
     }
 
+    if (!selectedItem) {
+      toast.error('Item information not available');
+      return;
+    }
+
     const calculatedDuration = calculateDuration(startDate, endDate);
     
     if (selectedItem.max_rental_duration !== null && calculatedDuration > selectedItem.max_rental_duration) {
@@ -155,6 +203,9 @@ const ItemDetails = () => {
     );
   }
 
+
+  console.log(images)
+  console.log(primaryImage)
   if (!selectedItem) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -168,18 +219,55 @@ const ItemDetails = () => {
   const totalPrice = (selectedItem.rental_price * rentalDuration).toFixed(2);
 
   return (
-    <div className="container mx-auto px-4 py-8 ">
+    <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Image Placeholder */}
-          <div className="relative h-96 bg-gray-100">
-            <div className="absolute z-4 inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 bg-white rounded-lg shadow-sm flex items-center justify-center">
-                <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
+          {/* Image Gallery */}
+          <div className="relative bg-gray-100">
+            {/* Primary Image Container */}
+            <div className="aspect-w-16 aspect-h-9 w-full">
+              {primaryImage ? (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <img
+                    src={primaryImage.image_url}
+                    alt={selectedItem.item_name}
+                    className="max-h-[500px] w-auto object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 bg-white rounded-lg shadow-sm flex items-center justify-center">
+                    <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Image Gallery Thumbnails */}
+            {images.length > 1 && (
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2 overflow-x-auto">
+                <div className="flex space-x-2">
+                  {images.map((image) => (
+                    <button
+                      key={image.image_id}
+                      onClick={() => setPrimaryImage(image)}
+                      className={`w-20 h-20 flex-shrink-0 rounded overflow-hidden ${
+                        primaryImage?.image_id === image.image_id ? 'ring-2 ring-blue-500' : ''
+                      }`}
+                    >
+                      <img
+                        src={image.image_url}
+                        alt={`${selectedItem.item_name} - Image ${image.image_id}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Wishlist Button */}
             <button
               onClick={handleWishlistToggle}
@@ -307,7 +395,7 @@ const ItemDetails = () => {
       </div>
 
       {/* Owner Details Modal */}
-      {showOwnerModal && (
+      {showOwnerModal && selectedItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-start mb-4">
@@ -326,7 +414,7 @@ const ItemDetails = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                   <span className="text-blue-600 font-semibold text-lg">
-                    {selectedItem.owner_first_name[0]}{selectedItem.owner_last_name[0]}
+                    {selectedItem.owner_first_name?.[0]}{selectedItem.owner_last_name?.[0]}
                   </span>
                 </div>
                 <div>

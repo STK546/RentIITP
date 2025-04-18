@@ -1,4 +1,4 @@
-import { addItemImage, createItem, deleteItem, getItemDetails, searchItems, updateItemAvailability, updateItemDetails } from '../services/item.service.js';
+import { addItemImage, createItem, deleteItem, getItemDetails, getItemImages, searchItems, updateItemAvailability, updateItemDetails } from '../services/item.service.js';
 
 
 async function searchItemsController(req, res, next) {
@@ -235,6 +235,24 @@ async function deleteItemController(req, res, next) {
 }
 
 
+async function getItemImagesController(req, res, next) {
+    const itemId = parseInt(req.params.itemId, 10); // Get item ID from URL parameter
+
+    if (isNaN(itemId)) {
+        return res.status(400).json({ message: 'Invalid Item ID provided.' });
+    }
+
+    try {
+        const images = await getItemImages(itemId);
+
+        res.status(200).json({ images: images }); // Wrap the array in an 'images' key
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 export  {
     searchItemsController,
     createItemController,
@@ -242,5 +260,6 @@ export  {
     updateItemController,
     updateItemAvailabilityController,
     addImageController,
-    deleteItemController
+    deleteItemController,
+    getItemImagesController
 };

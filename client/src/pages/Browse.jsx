@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchItems } from '../features/items/itemsSlice';
+import { fetchItems, getAllItems } from '../features/items/itemsSlice';
 import { fetchCategories } from '../features/categories/categoriesSlice';
+import axios from 'axios';
 
 const Browse = () => {
   const dispatch = useDispatch();
-  const { items, loading } = useSelector((state) => state.items);
+  const { items, loading, error } = useSelector((state) => state.items);
   const { categories } = useSelector((state) => state.categories);
+  const [itemImages, setItemImages] = useState({});
   
   const [filters, setFilters] = useState({
     search: '',
@@ -21,6 +23,28 @@ const Browse = () => {
     dispatch(fetchItems());
     dispatch(fetchCategories());
   }, [dispatch]);
+
+  useEffect(() => {
+    const fetchItemImages = async () => {
+      const imagesMap = {};
+      for (const item of items) {
+        try {
+          const response = await axios.get(`http://localhost:3000/api/items/${item.item_id}/images`);
+          if (response.data?.images) {
+            const primaryImage = response.data.images.find(img => img.is_primary === 1) || response.data.images[0];
+            imagesMap[item.item_id] = primaryImage?.image_url;
+          }
+        } catch (err) {
+          console.error(`Error fetching images for item ${item.item_id}:`, err);
+        }
+      }
+      setItemImages(imagesMap);
+    };
+
+    if (items.length > 0) {
+      fetchItemImages();
+    }
+  }, [items]);
 
   const filteredItems = items?.filter(item => {
     const matchesSearch = !filters.search || 
@@ -60,7 +84,17 @@ const Browse = () => {
       </div>
     );
   }
-console.log(items,"items")
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Browse Items</h1>
@@ -201,14 +235,22 @@ console.log(items,"items")
             key={item.item_id}
             className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
           >
-            {/* Image Placeholder */}
-            <div className="relative h-48 bg-gray-100 overflow-hidden">
+            {/* Image Container */}
+            <div className="relative w-full aspect-[4/3] bg-gray-100 overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 bg-white rounded-lg shadow-sm flex items-center justify-center">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
+                {itemImages[item.item_id] ? (
+                  <img
+                    src={itemImages[item.item_id]}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-white rounded-lg shadow-sm flex items-center justify-center">
+                    <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
                 <div className="text-xs text-white font-medium">Click to view details</div>

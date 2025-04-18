@@ -11,6 +11,7 @@ const Wishlist = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const authState = useSelector((state) => state.auth);
   const token = localStorage.getItem('token');
+  const [itemImages, setItemImages] = useState({});
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -31,6 +32,20 @@ const Wishlist = () => {
 
         if (response.data && response.data.wishlist) {
           setData(response.data);
+          // Fetch images for all wishlist items
+          const imagesMap = {};
+          for (const item of response.data.wishlist) {
+            try {
+              const imageResponse = await axios.get(`http://localhost:3000/api/items/${item.item_id}/images`);
+              if (imageResponse.data?.images) {
+                const primaryImage = imageResponse.data.images.find(img => img.is_primary === 1) || imageResponse.data.images[0];
+                imagesMap[item.item_id] = primaryImage?.image_url;
+              }
+            } catch (err) {
+              console.error(`Error fetching images for item ${item.item_id}:`, err);
+            }
+          }
+          setItemImages(imagesMap);
         } else {
           setError('Invalid response format from server');
         }
@@ -50,6 +65,11 @@ const Wishlist = () => {
   }, [token, authState]);
 
   const handleRemoveFromWishlist = async (itemId) => {
+    if (!token) {
+      toast.error('Please login to modify wishlist');
+      return;
+    }
+
     try {
       await axios.delete(`http://localhost:3000/api/wishlist/${itemId}`, {
         headers: {
@@ -68,7 +88,7 @@ const Wishlist = () => {
       toast.success('Item removed from wishlist');
     } catch (err) {
       console.error('Error removing from wishlist:', err);
-      toast.error('Failed to remove item from wishlist');
+      toast.error(err.response?.data?.message || 'Failed to remove item from wishlist');
     } finally {
       setItemToDelete(null);
     }

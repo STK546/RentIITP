@@ -27,7 +27,7 @@ export const getItem = createAsyncThunk(
     try {
       console.log('Dispatching getItem action for ID:', itemId);
       const response = await itemsApi.getItem(itemId);
-      console.log('Item details fetched in Redux:', response.data);
+      // console.log('Item details fetched in Redux:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error in getItem thunk:', {

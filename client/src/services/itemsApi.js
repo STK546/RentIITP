@@ -10,7 +10,7 @@ const itemsApi = {
       const response = await axios.get(`${API_URL}/items`, {
         withCredentials: true
       });
-      console.log('Items fetched successfully:', response.data);
+      // console.log('Items fetched successfully:', response.data);
       return response;
     } catch (error) {
       console.error('Error fetching items:', error.response?.data || error.message);

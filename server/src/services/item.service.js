@@ -158,6 +158,27 @@ async function deleteItem(itemId, actingUserId) {
 }
 
 
+async function getItemImages(itemId) {
+    
+    const sql = `
+        SELECT
+            image_id,
+            item_id,
+            image_url,
+            is_primary,
+            upload_date
+        FROM ItemImages
+        WHERE item_id = ?
+        ORDER BY is_primary DESC, upload_date DESC
+    `;
+    try {
+        const [rows] = await pool.query(sql, [itemId]);
+        return rows;
+    } catch (error) {
+        console.error('Error fetching item images:', error);
+        throw new Error('Database error fetching item images.');
+    }
+}
 
 
 
@@ -168,5 +189,6 @@ export {
     updateItemDetails,
     updateItemAvailability,
     addItemImage,
-    deleteItem
+    deleteItem,
+    getItemImages
 };

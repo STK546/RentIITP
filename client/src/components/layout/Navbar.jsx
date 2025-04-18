@@ -49,7 +49,7 @@ const Navbar = () => {
     dispatch(logout());
   };
 
-  console.log(notifications);
+  // console.log(notifications);
 
   return (
     <nav className="bg-white shadow-sm">
