@@ -59,7 +59,7 @@ const AppRoutes = () => {
           <OwnerDashboard />
         </PrivateRoute>
       } />
-      <Route path="/test-wishlist" element={
+      <Route path="/wishlist" element={
         <PrivateRoute>
           <TestWishlist />
         </PrivateRoute>

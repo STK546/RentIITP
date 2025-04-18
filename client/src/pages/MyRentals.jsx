@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 // import { Link } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import rentalsApi from '../services/api/rentals';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 // import Button from '../components/common/Button';
 
 const MyRentals = () => {
@@ -11,80 +13,112 @@ const MyRentals = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('current');
 
+  const fetchRentals = async () => {
+    if (!user) {
+      setError('Authentication required. Please log in.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch both renter and owner rentals
+      const [renterResponse, ownerResponse] = await Promise.all([
+        rentalsApi.fetchUserRentals('renter'),
+        rentalsApi.fetchUserRentals('owner')
+      ]);
+
+      // Check if either response has an error message
+      if (renterResponse.message && !renterResponse.message.toLowerCase().startsWith('successfully')) {
+        throw new Error(`Renter rentals: ${renterResponse.message}`);
+      }
+      if (ownerResponse.message && !ownerResponse.message.toLowerCase().startsWith('successfully')) {
+        throw new Error(`Owner rentals: ${ownerResponse.message}`);
+      }
+
+      // Combine rentals from both responses
+      const allRentals = [
+        ...(renterResponse.rentals || []),
+        ...(ownerResponse.rentals || [])
+      ];
+
+      // Sort rentals by start date
+      const sortedRentals = allRentals.sort((a, b) => 
+        new Date(b.start_date) - new Date(a.start_date)
+      );
+
+      // Separate current and past rentals
+      const now = new Date();
+      const currentRentals = sortedRentals.filter(rental => 
+        new Date(rental.end_date) >= now && 
+        (rental.rental_status === 'active' || rental.rental_status === 'requested' || rental.rental_status === 'confirmed')
+      );
+      
+      const pastRentals = sortedRentals.filter(rental => 
+        new Date(rental.end_date) < now || 
+        rental.rental_status === 'completed' || 
+        rental.rental_status === 'cancelled' ||
+        rental.rental_status === 'rejected'
+      );
+
+      setRentals({
+        current: currentRentals,
+        past: pastRentals
+      });
+    } catch (err) {
+      console.error('Error fetching rentals:', err);
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(`Server error: ${err.response.data.message || err.response.statusText}`);
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('Network error: Could not connect to the server');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError(err.message || 'An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRentals = async () => {
-      if (!user) {
-        setError('Authentication required. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch both renter and owner rentals
-        const [renterResponse, ownerResponse] = await Promise.all([
-          rentalsApi.fetchUserRentals('renter'),
-          rentalsApi.fetchUserRentals('owner')
-        ]);
-
-        // Check if either response has an error message
-        if (renterResponse.message && !renterResponse.message.toLowerCase().startsWith('successfully')) {
-          throw new Error(`Renter rentals: ${renterResponse.message}`);
-        }
-        if (ownerResponse.message && !ownerResponse.message.toLowerCase().startsWith('successfully')) {
-          throw new Error(`Owner rentals: ${ownerResponse.message}`);
-        }
-
-        // Combine rentals from both responses
-        const allRentals = [
-          ...(renterResponse.rentals || []),
-          ...(ownerResponse.rentals || [])
-        ];
-
-        // Sort rentals by start date
-        const sortedRentals = allRentals.sort((a, b) => 
-          new Date(b.start_date) - new Date(a.start_date)
-        );
-
-        // Separate current and past rentals
-        const now = new Date();
-        const currentRentals = sortedRentals.filter(rental => 
-          new Date(rental.end_date) >= now && 
-          (rental.rental_status === 'active' || rental.rental_status === 'requested')
-        );
-        
-        const pastRentals = sortedRentals.filter(rental => 
-          new Date(rental.end_date) < now || 
-          rental.rental_status === 'completed' || 
-          rental.rental_status === 'cancelled'
-        );
-
-        setRentals({
-          current: currentRentals,
-          past: pastRentals
-        });
-      } catch (err) {
-        console.error('Error fetching rentals:', err);
-        if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          setError(`Server error: ${err.response.data.message || err.response.statusText}`);
-        } else if (err.request) {
-          // The request was made but no response was received
-          setError('Network error: Could not connect to the server');
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          setError(err.message || 'An unexpected error occurred');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchRentals();
+    // Set up auto-refresh every 30 seconds
+    const interval = setInterval(fetchRentals, 30000);
+    return () => clearInterval(interval);
   }, [user]);
+
+  const getStatusBadgeColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'requested':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed':
+        return 'bg-blue-100 text-blue-800';
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-gray-100 text-gray-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   if (!user) {
     return (
@@ -125,35 +159,142 @@ const MyRentals = () => {
     );
   }
 
-  const RentalCard = ({ rental }) => (
-    <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-xl font-semibold mb-2">{rental.item_name}</h3>
-          <p className="text-gray-600">
-            <span className="font-medium">Owner:</span> {rental.owner_username}
-          </p>
-        </div>
-        
-        <div className="space-y-2">
-          <p className="text-gray-600">
-            <span className="font-medium">Dates:</span>{' '}
-            {new Date(rental.start_date).toLocaleDateString()} -{' '}
-            {new Date(rental.end_date).toLocaleDateString()}
-          </p>
-          <p className="text-lg font-bold">₹{rental.agreed_price}/day</p>
-          <p className={`text-sm font-medium ${
-            rental.rental_status === 'active' ? 'text-green-600' : 
-            rental.rental_status === 'requested' ? 'text-yellow-600' : 
-            rental.rental_status === 'completed' ? 'text-blue-600' : 
-            rental.rental_status === 'cancelled' ? 'text-red-600' : 'text-gray-600'
-          }`}>
-            Status: {rental.rental_status.charAt(0).toUpperCase() + rental.rental_status.slice(1)}
-          </p>
+  const RentalCard = ({ rental }) => {
+    const isOwner = rental.owner_id === user.userId;
+    const isRenter = rental.renter_id === user.userId;
+
+    const handleStatusChange = async (newStatus) => {
+      try {
+        const response = await axios.put(
+          `http://localhost:3000/api/rentals/${rental.rental_id}/status`,
+          { newStatus },
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true
+          }
+        );
+
+        if (response.status === 200) {
+          toast.success('Rental status updated successfully');
+          fetchRentals(); // Refresh the data
+        }
+      } catch (err) {
+        console.error('Error updating rental status:', err);
+        const errorMessage = err.response?.data?.message || 'Failed to update rental status';
+        toast.error(errorMessage);
+      }
+    };
+
+    const renderActionButtons = () => {
+      switch (rental.rental_status.toLowerCase()) {
+        case 'requested':
+          if (isOwner) {
+            return (
+              <div className="space-x-2">
+                <button
+                  onClick={() => handleStatusChange('confirmed')}
+                  className="text-green-600 hover:text-green-900"
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={() => handleStatusChange('rejected')}
+                  className="text-red-600 hover:text-red-900"
+                >
+                  Reject
+                </button>
+              </div>
+            );
+          } else if (isRenter) {
+            return (
+              <button
+                onClick={() => handleStatusChange('cancelled')}
+                className="text-red-600 hover:text-red-900"
+              >
+                Cancel
+              </button>
+            );
+          }
+          return null;
+
+        case 'confirmed':
+          if (isRenter) {
+            return (
+              <div className="space-x-2">
+                <button
+                  onClick={() => handleStatusChange('active')}
+                  className="text-blue-600 hover:text-blue-900"
+                >
+                  Mark as Active
+                </button>
+                <button
+                  onClick={() => handleStatusChange('cancelled')}
+                  className="text-red-600 hover:text-red-900"
+                >
+                  Cancel
+                </button>
+              </div>
+            );
+          } else if (isOwner) {
+            return (
+              <button
+                onClick={() => handleStatusChange('cancelled')}
+                className="text-red-600 hover:text-red-900"
+              >
+                Cancel
+              </button>
+            );
+          }
+          return null;
+
+        case 'active':
+          if (isOwner) {
+            return (
+              <button
+                onClick={() => handleStatusChange('completed')}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                Mark as Completed
+              </button>
+            );
+          }
+          return null;
+
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-xl font-semibold mb-2">{rental.item_name}</h3>
+            <p className="text-gray-600">
+              <span className="font-medium">{isOwner ? 'Renter' : 'Owner'}:</span> {isOwner ? rental.renter_username : rental.owner_username}
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <p className="text-gray-600">
+              <span className="font-medium">Dates:</span>{' '}
+              {formatDate(rental.start_date)} - {formatDate(rental.end_date)}
+            </p>
+            <p className="text-lg font-bold">₹{rental.agreed_price}</p>
+            <div className="flex justify-between items-center">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(rental.rental_status)}`}>
+                {rental.rental_status.charAt(0).toUpperCase() + rental.rental_status.slice(1)}
+              </span>
+              {renderActionButtons()}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">

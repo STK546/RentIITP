@@ -5,19 +5,17 @@ import { toast } from 'react-hot-toast';
 
 const OwnerDashboard = () => {
   const navigate = useNavigate();
-  const [listedItems, setListedItems] = useState([]);
-  const [rentalRequests, setRentalRequests] = useState([]);
+  const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetchOwnerData();
+    fetchRentals();
   }, []);
 
-  const fetchOwnerData = async () => {
+  const fetchRentals = async () => {
     try {
-      // Fetch listed items
-      const itemsResponse = await axios.get('http://localhost:3000/api/items/my-items', {
+      const response = await axios.get('http://localhost:3000/api/rentals?role=owner', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -25,26 +23,28 @@ const OwnerDashboard = () => {
         withCredentials: true
       });
 
-      // Fetch rental requests
-      const rentalsResponse = await axios.get('http://localhost:3000/api/rentals?role=owner', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true
-      });
-
-      setListedItems(itemsResponse.data.items || []);
-      setRentalRequests(rentalsResponse.data.rentals || []);
+      if (response.data && response.data.rentals) {
+        setRentals(response.data.rentals);
+      } else {
+        setRentals([]);
+        console.warn('No rentals found in response:', response.data);
+      }
     } catch (err) {
-      console.error('Error fetching owner data:', err);
-      toast.error('Failed to load dashboard data');
+      console.error('Error fetching rentals:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to load rentals';
+      toast.error(errorMessage);
+      setRentals([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleStatusChange = async (rentalId, newStatus) => {
+    if (!rentalId || typeof rentalId !== 'number' || rentalId <= 0) {
+      toast.error('Invalid rental ID');
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:3000/api/rentals/${rentalId}/status`,
@@ -60,11 +60,12 @@ const OwnerDashboard = () => {
 
       if (response.status === 200) {
         toast.success('Rental status updated successfully');
-        fetchOwnerData(); // Refresh the data
+        fetchRentals(); // Refresh the data
       }
     } catch (err) {
       console.error('Error updating rental status:', err);
-      toast.error(err.response?.data?.message || 'Failed to update rental status');
+      const errorMessage = err.response?.data?.message || 'Failed to update rental status';
+      toast.error(errorMessage);
     }
   };
 
@@ -87,6 +88,15 @@ const OwnerDashboard = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -99,27 +109,6 @@ const OwnerDashboard = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Owner Dashboard</h1>
 
-      {/* Listed Items Section */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">My Listed Items</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listedItems.map((item) => (
-            <div key={item.item_id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
-                <p className="text-gray-600 mb-4">{item.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-blue-600">₹{item.rental_price}</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(item.availability_status)}`}>
-                    {item.availability_status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Rental Requests Section */}
       <div>
         <h2 className="text-2xl font-semibold mb-4">Rental Requests</h2>
@@ -131,33 +120,35 @@ const OwnerDashboard = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Renter</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {rentalRequests.map((rental) => (
+                {rentals.map((rental) => (
                   <tr key={rental.rental_id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{rental.item_name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{rental.renter_username}</div>
-                      <div className="text-sm text-gray-500">{rental.renter_email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}
+                        {formatDate(rental.start_date)} - {formatDate(rental.end_date)}
                       </div>
-                      <div className="text-sm text-gray-500">{rental.rental_duration} days</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(rental.status)}`}>
-                        {rental.status}
+                      <div className="text-sm font-medium text-gray-900">₹{rental.agreed_price}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(rental.rental_status)}`}>
+                        {rental.rental_status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {rental.status === 'requested' && (
+                      {rental.rental_status === 'requested' && (
                         <div className="space-x-2">
                           <button
                             onClick={() => handleStatusChange(rental.rental_id, 'confirmed')}
@@ -173,15 +164,15 @@ const OwnerDashboard = () => {
                           </button>
                         </div>
                       )}
-                      {rental.status === 'confirmed' && (
+                      {/* {rental.rental_status === 'confirmed' && (
                         <button
                           onClick={() => handleStatusChange(rental.rental_id, 'active')}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           Mark as Active
                         </button>
-                      )}
-                      {rental.status === 'active' && (
+                      )} */}
+                      {rental.rental_status === 'active' && (
                         <button
                           onClick={() => handleStatusChange(rental.rental_id, 'completed')}
                           className="text-gray-600 hover:text-gray-900"
