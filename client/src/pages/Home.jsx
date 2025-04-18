@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon, UserGroupIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
-
+import img from './img.jpg'
 const Home = () => {
   const { user } = useSelector((state) => state.auth);
 
@@ -75,7 +75,8 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-50 flex items-center justify-center">
               <img 
                 className='h-full w-auto object-contain' 
-                src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFkkyDFNIIh4Lj3mw3v17S1813GHUBFzw3vQ&s' 
+                src={img}
+                // src='C:\Users\hp\Desktop\DBMS\RentIITP\client\public\IIT Patna.jpeg' 
                 alt='IIT Patna Campus'
               />
             </div>

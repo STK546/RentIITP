@@ -165,7 +165,7 @@ const Navbar = () => {
                 <Menu as="div" className="relative">
                   <Menu.Button className="flex items-center space-x-2 text-sm focus:outline-none">
                     <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      {user.name?.charAt(0)}
+                      {user.username.charAt(0).toUpperCase()}
                     </div>
                   </Menu.Button>
 

@@ -52,11 +52,13 @@ const Register = () => {
   };
 
   const hostelNames = [
-    'Brahmaputra',
-    'Ganga',
-    'Kosi',
-    'Son',
-    'Bagmati',
+    'C.V. Raman',
+    'Aryabhatta',
+    'Kalam',
+    'Asima',
+    'Married Hostel',
+    'Faculty Quarter',
+    'D Quarter',
   ];
 
   return (
@@ -69,14 +71,14 @@ const Register = () => {
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Full Name */}
           <Input
-            label="Full Name"
+            label="User Name"
             id="username"
             name="username"
             type="text"
             required
             value={formData.username}
             onChange={handleChange}
-            placeholder="John Doe"
+            placeholder="Enter your username"
           />
 
           {/* Roll Number */}
@@ -88,7 +90,7 @@ const Register = () => {
             required
             value={formData.rollNumber}
             onChange={handleChange}
-            placeholder="2025CS01"
+            placeholder="2301MC57"
           />
 
           {/* Email */}
