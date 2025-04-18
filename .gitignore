@@ -1,3 +1,4 @@
 .env
-\server\.env
-\database\output.sql
+/client/node_modules
+/database/output.sql
+/server/.env
