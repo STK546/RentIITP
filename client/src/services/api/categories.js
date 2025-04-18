@@ -17,42 +17,33 @@ const categoriesApi = {
     return response.data;
   },
 
-  createCategory: async (categoryData, token) => {
+  createCategory: async (categoryData) => {
     const response = await axios.post(
       `${API_URL}/categories`,
       categoryData,
       {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
   },
 
-  updateCategory: async (categoryId, categoryData, token) => {
+  updateCategory: async (categoryId, categoryData) => {
     const response = await axios.put(
       `${API_URL}/categories/${categoryId}`,
       categoryData,
       {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
   },
 
-  deleteCategory: async (categoryId, token) => {
+  deleteCategory: async (categoryId) => {
     await axios.delete(
       `${API_URL}/categories/${categoryId}`,
       {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       }
     );
   }

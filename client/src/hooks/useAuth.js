@@ -8,7 +8,7 @@ const useAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, isLoading, error } = useSelector((state) => state.auth);
-  console.log(user)
+  // console.log(user)
 
   const handleLogin = async (username, password) => {
     try {

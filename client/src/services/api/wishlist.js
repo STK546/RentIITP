@@ -3,36 +3,30 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 const wishlistApi = {
-  addToWishlist: async (itemId, token) => {
+  addToWishlist: async (itemId) => {
     const response = await axios.post(
       `${API_URL}/wishlist`,
       { itemId },
       {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
   },
 
-  removeFromWishlist: async (itemId, token) => {
+  removeFromWishlist: async (itemId) => {
     const response = await axios.delete(
       `${API_URL}/wishlist/${itemId}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
   },
 
-  getUserWishlist: async (token) => {
+  getUserWishlist: async () => {
     const response = await axios.get(`${API_URL}/wishlist`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      withCredentials: true
     });
     return response.data;
   }

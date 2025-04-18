@@ -1,42 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import useAuth from '../hooks/useAuth'; // Correct import for default export
+import notificationsApi from '../services/api/notifications'; // Import notifications API
 
 const Notifications = () => {
+  const { user } = useAuth(); // Get user from useAuth
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'unread'
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showPopup, setShowPopup] = useState(false); // State for popup visibility
 
-  // This will be replaced with actual data from the backend
-  const notifications = {
-    all: [
-      {
-        id: 1,
-        type: 'rental_request',
-        message: 'John Doe requested to rent "Introduction to Algorithms"',
-        timestamp: '2024-04-17T10:30:00Z',
-        read: true,
-        itemId: 1,
-      },
-      {
-        id: 2,
-        type: 'rental_accepted',
-        message: 'Your request to rent "Gaming Laptop" has been accepted',
-        timestamp: '2024-04-17T09:15:00Z',
-        read: false,
-        itemId: 2,
-      },
-      {
-        id: 3,
-        type: 'rental_reminder',
-        message: 'Your rental of "Introduction to Algorithms" ends tomorrow',
-        timestamp: '2024-04-16T15:45:00Z',
-        read: true,
-        itemId: 1,
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      if (!token) {
+        setError('Please log in to view notifications.');
+        setLoading(false);
+        return;
+      }
 
-  const filteredNotifications = notifications.all.filter(
+      try {
+        setLoading(true);
+        const response = await notificationsApi.getNotifications(token);
+        console.log(response);
+        if (response && response.notifications) {
+          setNotifications(response.notifications);
+        } else {
+          setError('Unexpected response structure.');
+        }
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+        setError('Failed to load notifications.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []); // Remove user dependency since token is from localStorage
+
+  const filteredNotifications = notifications.filter(
     notification => activeTab === 'all' || !notification.read
   );
+
+  if (loading) {
+    return <div>Loading notifications...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8">
@@ -65,6 +79,32 @@ const Notifications = () => {
               Unread
             </button>
           </div>
+        </div>
+
+        {/* Notification Popup */}
+        <div className="relative">
+          <button onClick={() => setShowPopup(!showPopup)} className="text-sm font-medium text-primary-600">
+            Show Notifications
+          </button>
+          {showPopup && (
+            <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg">
+              <ul className="divide-y divide-gray-200">
+                {filteredNotifications.slice(0, 5).map((notification) => (
+                  <li key={notification.id} className="px-4 py-2">
+                    <p className="text-sm text-gray-700">{notification.message}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(notification.created_timestamp).toLocaleString()}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="text-center py-2">
+                <Link to="/all-notifications" className="text-primary-600 hover:underline">
+                  View All
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Notifications List */}
@@ -103,7 +143,7 @@ const Notifications = () => {
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
-                              {new Date(notification.timestamp).toLocaleString()}
+                              {new Date(notification.created_timestamp).toLocaleString()}
                             </p>
                           </div>
                         </div>

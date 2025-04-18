@@ -40,12 +40,10 @@ const itemsApi = {
   },
 
   // Create new item
-  createItem: async (itemData, token) => {
+  createItem: async (itemData) => {
     try {
       const response = await axios.post(`${API_URL}/items`, itemData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       });
       return response.data;
     } catch (error) {
@@ -55,12 +53,10 @@ const itemsApi = {
   },
 
   // Update item
-  updateItem: async (itemId, itemData, token) => {
+  updateItem: async (itemId, itemData) => {
     try {
       const response = await axios.put(`${API_URL}/items/${itemId}`, itemData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       });
       return response.data;
     } catch (error) {
@@ -70,12 +66,10 @@ const itemsApi = {
   },
 
   // Delete item
-  deleteItem: async (itemId, token) => {
+  deleteItem: async (itemId) => {
     try {
       const response = await axios.delete(`${API_URL}/items/${itemId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       });
       return response.data;
     } catch (error) {
@@ -85,12 +79,10 @@ const itemsApi = {
   },
 
   // Add image to item
-  addItemImage: async (itemId, imageData, token) => {
+  addItemImage: async (itemId, imageData) => {
     try {
       const response = await axios.post(`${API_URL}/items/${itemId}/images`, imageData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true
       });
       return response.data;
     } catch (error) {
@@ -100,14 +92,12 @@ const itemsApi = {
   },
 
   // Update item status
-  updateItemStatus: async (itemId, newStatus, token) => {
+  updateItemStatus: async (itemId, newStatus) => {
     try {
       const response = await axios.put(`${API_URL}/items/${itemId}/status`, 
         { newStatus },
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          withCredentials: true
         }
       );
       return response.data;

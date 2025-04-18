@@ -1,18 +1,55 @@
-import { Fragment } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Menu, Transition } from '@headlessui/react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { logout } from '../../features/auth/authSlice';
+import notificationsApi from '../../services/api/notifications';
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { unreadCount = 0 } = useSelector((state) => state.notifications) || {};
+  const [notifications, setNotifications] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // console.log(user);
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await notificationsApi.getNotifications();
+      if (response.notifications) {
+        setNotifications(response.notifications);
+      }
+    } catch (err) {
+      setError('Failed to fetch notifications');
+      console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      console.log('fetching notifications');
+      fetchNotifications();
+      // Set up polling for new notifications every 30 seconds
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [fetchNotifications, user]);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleLogout = () => {
     dispatch(logout());
   };
+
+  console.log(notifications);
 
   return (
     <nav className="bg-white shadow-sm">
@@ -70,15 +107,59 @@ const Navbar = () => {
             {user ? (
               <>
                 {/* Notifications */}
-                <Link
-                  to="/notifications"
-                  className="text-gray-400 hover:text-gray-500 relative p-1 rounded-full"
-                >
-                  <BellIcon className="h-6 w-6" />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
+                <div className="relative">
+                  <button
+                    onClick={() => setShowPopup(!showPopup)}
+                    className="relative p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+                  >
+                    <BellIcon className="h-6 w-6" />
+                    {/* {unreadCount > 0 && (
+                      <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                        {unreadCount}
+                      </span>
+                    )} */}
+                  </button>
+                  {showPopup && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
+                      <div className="p-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Notifications</h3>
+                        {loading ? (
+                          <div className="text-center py-4">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                          </div>
+                        ) : error ? (
+                          <div className="text-red-500 text-center py-4">{error}</div>
+                        ) : notifications.length === 0 ? (
+                          <div className="text-gray-500 text-center py-4">No notifications</div>
+                        ) : (
+                          <div className="max-h-96 overflow-y-auto">
+                            {notifications.slice(0, 5).map((notification) => (
+                              <div
+                                key={notification.notification_id}
+                                className={`p-3 border-b border-gray-200 ${
+                                  !notification.is_read ? 'bg-blue-50' : ''
+                                }`}
+                              >
+                                <p className="text-sm text-gray-900">{notification.message}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {new Date(notification.created_timestamp).toLocaleString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-4 text-center">
+                          <Link
+                            to="/notifications"
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            View all notifications
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </Link>
+                </div>
 
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative">
@@ -102,7 +183,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <Link
                             to="/owner-dashboard"
-                            className={`${
+                            className={`$${
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
@@ -114,7 +195,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <Link
                             to="/profile"
-                            className={`${
+                            className={`$${
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
@@ -126,7 +207,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <button
                             onClick={handleLogout}
-                            className={`${
+                            className={`$${
                               active ? 'bg-gray-100' : ''
                             } block w-full text-left px-4 py-2 text-sm text-gray-700`}
                           >
