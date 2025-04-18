@@ -4,7 +4,7 @@ import { secret } from '../../config/jwt.config.js';
 const { verify } = jwt;
 
 function verifyToken(req, res, next) {
-    console.log("hello")
+    // console.log("hello")
     // const authHeader = req.headers['authorization'];
     // console.log(`${authHeader}` );
     // const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
@@ -14,6 +14,8 @@ function verifyToken(req, res, next) {
     // }
 
     const token = req.cookies.token;
+    // console.log(req.cookies)
+    // console.log(token,"token")
 
     if (!token) {
         return res.status(403).json({ message: 'No token provided.' });

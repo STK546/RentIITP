@@ -14,7 +14,13 @@ const app = express();
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
-app.use(cors());
+// CORS configuration
+app.use(cors({
+    origin: 'http://localhost:3001', // Your frontend URL
+    credentials: true, // Allow credentials
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(cookieParser());
 

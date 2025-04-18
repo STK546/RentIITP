@@ -4,6 +4,7 @@ async function getUserProfile(userId) {
     const sql = `CALL GetUserProfile(?)`;
     try {
         const [results] = await pool.execute(sql, [userId]);
+        console.log(results)
         if (results && results.length > 0 && results[0].length > 0) {
             return results[0][0]; // Return the first row 
         } else {
@@ -41,7 +42,7 @@ async function updateUserProfile(userId, profileData) {
         hostelName,
         hostelBlock,
         roomNumber,
-        profilePictureUrl
+        profilePictureUrl,
     } = profileData;
 
     const sql = `CALL UpdateUserProfile(?, ?, ?, ?, ?, ?, @out_message)`;

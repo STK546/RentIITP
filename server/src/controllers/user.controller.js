@@ -3,6 +3,7 @@ import { getUserProfile, changePassword, updateUserProfile } from '../services/u
 async function getProfile(req, res, next) {
     // console.log("hello")
     const userId = req.userId;
+    console.log(req.userId)
     // const userId = 1;
     if (!userId) {
         return res.status(401).json({ message: "Unauthorized: User ID not found in token."});
@@ -48,8 +49,11 @@ async function updatePassword(req, res, next) {
 }
 
 async function updateProfile(req, res, next) {
+    console.log("hiii")
     const userId = req.userId;
+    console.log(userId)
     const profileData = req.body;
+    console.log(profileData)
 
     if (!userId) {
         return res.status(401).json({ message: 'Unauthorized: User ID not found in token.' });

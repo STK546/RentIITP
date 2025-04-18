@@ -9,21 +9,30 @@ async function register(req, res, next) {
         'username', 
         'email', 
         'password', 
-        'firstName', 
-        'lastName',
+        // 'firstName', 
+        // 'lastName',
         'rollNumber', 
-        'phoneNumber', 
+        // 'phoneNumber', 
         'hostelName', 
         'hostelBlock',
         'roomNumber',
-        'profilePictureUrl'
+        // 'profilePictureUrl'
     ];
-    if (requiredFields.some(field => !req.body[field])) {
-        return res.status(400).json({ message: 'Missing required fields.' });
-    }
+
+    // console.log(req.body)
+    // const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    // if (missingFields.length > 0) {
+    //     console.log("Missing fields:", missingFields);
+    //     return res.status(400).json({ 
+    //         message: 'Missing required fields.', 
+    //         missingFields 
+    //     });
+    // }
 
     try {
         const result = await registerUser(req.body);
+        console.log(result)
         if (result.userId) {
             res.status(201).json({ userId: result.userId, message: result.message }); 
         } else {
@@ -36,6 +45,8 @@ async function register(req, res, next) {
 }
 
 const ONE_DAY = 24 * 60 * 60 * 1000; 
+const SEVEN_DAYS = 7 * ONE_DAY; // 7 days in milliseconds
+
 async function login(req, res, next) {
     const { username, password } = req.body;
 
@@ -45,6 +56,7 @@ async function login(req, res, next) {
 
     try {
         const result = await authenticateUser(username, password);
+        console.log(result,"afs")
 
         if (result.userId && result.accountStatus === 'active') {
             // JWT Payload
@@ -63,12 +75,13 @@ async function login(req, res, next) {
                 httpOnly: true,
                 secure: false, // Set to true in production with HTTPS
                 sameSite: 'strict',
-                maxAge: ONE_DAY,
+                maxAge: SEVEN_DAYS, // Changed from ONE_DAY to SEVEN_DAYS
             });
 
             // Send token and user info 
             res.status(200).json({
                 userId: result.userId,
+                username,
                 firstName: result.firstName,
                 lastName: result.lastName,
                 email: result.email,
@@ -83,8 +96,24 @@ async function login(req, res, next) {
     }
 }
 
+async function logout(req, res) {
+    try {
+        // Clear the token cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: false, // Set to true in production with HTTPS
+            sameSite: 'strict'
+        });
+
+        res.status(200).json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({ message: 'Error during logout' });
+    }
+}
+
 export {
     register,
     login,
-    
+    logout
 };

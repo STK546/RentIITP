@@ -6,9 +6,15 @@ async function registerUser(userData) {
         roomNumber, profilePictureUrl
     } = userData;
 
+    console.log(username, email, password, firstName, lastName,
+        rollNumber, phoneNumber, hostelName, hostelBlock,
+        roomNumber, profilePictureUrl)
+
+
+
     const sql = `CALL RegisterUser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @out_user_id, @out_message)`;
     const params = [
-        username, email, password, firstName, lastName,
+        username, email, password, firstName||'firstName', lastName||'lastName',
         rollNumber || null, phoneNumber || null, hostelName || null,
         hostelBlock || null, roomNumber || null, profilePictureUrl || null
     ];
