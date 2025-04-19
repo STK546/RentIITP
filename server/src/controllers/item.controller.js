@@ -81,6 +81,7 @@ async function getItemController(req, res, next) {
 export async function getAllItemsController(req, res, next) {
     try {
       const items = await getAllItems();
+      console.log(items);
       res.status(200).json({ items });
     } catch (error) {
       next(error);
