@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const AddItem = () => {
   const navigate = useNavigate();
@@ -17,6 +18,16 @@ const AddItem = () => {
     maxRentalDuration: '',
     primaryImageUrl: ''
   });
+  
+  const [image, setImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Cloudinary configuration
+  const CLOUDINARY_UPLOAD_PRESET = 'my_unsigned_preset';
+  const CLOUDINARY_CLOUD_NAME = 'dty5nvjnc';
+  const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,22 +37,80 @@ const AddItem = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setPreviewImage(null);
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    
+    try {
+      const response = await axios.post(CLOUDINARY_UPLOAD_URL, formData);
+      return response.data.secure_url;
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      throw new Error('Failed to upload image');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setError('');
+    setUploading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/items', formData, {
-        withCredentials: true
-      });
+      if (!image) {
+        throw new Error('Please upload an image for your item');
+      }
+
+      // Upload image to Cloudinary
+      const imageUrl = await uploadToCloudinary(image);
+
+      // Create the request data object
+      const requestData = {
+        categoryId: formData.categoryId,
+        name: formData.name,
+        description: formData.description,
+        rentalPrice: formData.rentalPrice,
+        rentalUnit: formData.rentalUnit,
+        itemCondition: formData.itemCondition,
+        locationDescription: formData.locationDescription,
+        maxRentalDuration: formData.maxRentalDuration,
+        primaryImageUrl: imageUrl
+      };
+
+      // Make the API request with credentials
+      const response = await axios.post(
+        'http://localhost:3000/api/items', 
+        requestData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
       toast.success('Item listed successfully!');
       navigate(`/items/${response.data.itemId}`);
     } catch (error) {
-      console.error('Error listing item:', error);
-      toast.error(error.response?.data?.message || 'Failed to list item');
+      console.error('Error creating item:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create item. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -53,6 +122,11 @@ const AddItem = () => {
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
               List an Item for Rent
             </h3>
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-800">{error}</p>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Item Name */}
               <div>
@@ -194,7 +268,7 @@ const AddItem = () => {
               </div>
 
               {/* Primary Image URL */}
-              <div>
+              {/* <div>
                 <label htmlFor="primaryImageUrl" className="block text-sm font-medium text-gray-700">
                   Primary Image URL
                 </label>
@@ -206,16 +280,67 @@ const AddItem = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 />
+              </div> */}
+
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Item Image
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
+                  <div className="space-y-1 text-center">
+                    {!previewImage && (
+                      <>
+                        <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <div className="flex text-sm text-gray-500">
+                          <label htmlFor="image" className="relative cursor-pointer rounded-md font-medium text-gray-600 hover:text-gray-800 focus-within:outline-none">
+                            <span>Upload an image</span>
+                            <input
+                              id="image"
+                              name="image"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="sr-only"
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                      </>
+                    )}
+
+                    {/* Single Image Preview */}
+                    {previewImage && (
+                      <div className="relative">
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="max-h-48 mx-auto rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Submit Button */}
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  disabled={uploading}
+                  className={`px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200 ${
+                    uploading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  {loading ? 'Listing...' : 'List Item'}
+                  {uploading ? 'Listing...' : 'List Item'}
                 </button>
               </div>
             </form>

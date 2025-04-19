@@ -34,6 +34,7 @@ async function searchItemsController(req, res, next) {
 async function createItemController(req, res, next) {
     const ownerId = req.userId; 
     const itemData = req.body;
+    console.log(itemData);
 
     const requiredFields = ['categoryId', 'name', 'description', 'rentalPrice', 'rentalUnit', 'itemCondition'];
     if (!ownerId || requiredFields.some(field => !itemData[field])) {

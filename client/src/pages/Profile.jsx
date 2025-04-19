@@ -93,7 +93,7 @@ const Profile = () => {
                     </div>
                   )}
                 </div>
-                <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg transform transition-all duration-300 hover:scale-110">
+                {/* <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg transform transition-all duration-300 hover:scale-110">
                   <label className="cursor-pointer">
                     <input
                       type="file"
@@ -126,7 +126,7 @@ const Profile = () => {
                       />
                     </svg>
                   </label>
-                </div>
+                </div> */}
               </div>
               <div className="text-center">
                 <h2 className="text-3xl font-semibold text-white">
