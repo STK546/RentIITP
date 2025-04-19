@@ -39,6 +39,12 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!formData.email.endsWith('@iitp.ac.in')) {
+      toast.error('Please use your @iitp.ac.in email address');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       console.log(formData)
       await dispatch(register(formData)).unwrap();

@@ -114,6 +114,7 @@ export const logoutUser = createAsyncThunk(
       });
     } finally {
       localStorage.removeItem('user');
+      localStorage.removeItem('token');  
       deleteCookie('token');
     }
   }
@@ -151,6 +152,7 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.user = null;
+      state.token = null;  
       state.error = null;
     }
   },

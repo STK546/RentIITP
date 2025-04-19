@@ -15,6 +15,8 @@ const Navbar = () => {
   const [error, setError] = useState(null);
   const notificationRef = useRef(null);
 
+  console.log(user)
+
   // console.log(user);
   const fetchNotifications = useCallback(async () => {
     if (!user) return;

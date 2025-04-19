@@ -52,11 +52,13 @@ const Profile = () => {
   };
 
   const hostels = [
-    'Brahmaputra',
-    'Ganga',
-    'Kosi',
-    'Son',
-    'Bagmati',
+    'C.V. Raman',
+    'Aryabhatta',
+    'Kalam',
+    'Asima',
+    'Married Hostles',
+    'Faculty Quarters',
+    'D Quarters',
   ];
 
   if (isLoading) {
@@ -87,7 +89,7 @@ const Profile = () => {
                     />
                   ) : (
                     <div className="text-white/80 text-6xl font-light">
-                      {user?.first_name?.[0]}{user?.last_name?.[0]}
+                      {user?.username[0]}
                     </div>
                   )}
                 </div>
@@ -128,7 +130,7 @@ const Profile = () => {
               </div>
               <div className="text-center">
                 <h2 className="text-3xl font-semibold text-white">
-                  {user?.first_name} {user?.last_name}
+                  {user?.username}
                 </h2>
                 <p className="text-white/80 mt-2">{user?.email}</p>
                 <p className="text-white/80 text-sm mt-1">Roll Number: {user?.roll_number}</p>

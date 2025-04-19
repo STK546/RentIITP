@@ -263,3 +263,32 @@ SELECT @message; -- Expected: 'Error: Permission denied. You are not the owner o
 -- Example 4: Attempt to delete non-existent item
 CALL DeleteItem(999, 1, @message);
 SELECT @message; -- Expected: 'Error: Item ID not found.'
+
+
+CALL DeleteItem(2	,2,@message);
+CALL DeleteItem(3	,3,@message);
+CALL DeleteItem(4	,4,@message);
+CALL DeleteItem(5	,5,@message);
+CALL DeleteItem(6	,1,@message);
+CALL DeleteItem(7	,6,@message);
+CALL DeleteItem(8	,7,@message);
+CALL DeleteItem(9	,8,@message);
+CALL DeleteItem(10,	9,@message);
+CALL DeleteItem(11,	10,@message);
+CALL DeleteItem(12,	11,@message);
+CALL DeleteItem(13,	12,@message);
+CALL DeleteItem(14,	13,@message);
+CALL DeleteItem(15,	14,@message);
+CALL DeleteItem(16,	15,@message);
+CALL DeleteItem(17,	16,@message);
+CALL DeleteItem(18,	17,@message);
+CALL DeleteItem(19,	18,@message);
+CALL DeleteItem(20,	19,@message);
+CALL DeleteItem(22,	1,@message);
+CALL DeleteItem(23,	2,@message);
+CALL DeleteItem(24,	1,@message);
+CALL DeleteItem(25,	2,@message);
+CALL DeleteItem(26,	26,@message);
+CALL DeleteItem(27,	29,@message);
+CALL DeleteItem(28,	29,@message);
+	
