@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Menu, Transition } from '@headlessui/react';
@@ -13,6 +13,7 @@ const Navbar = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const notificationRef = useRef(null);
 
   // console.log(user);
   const fetchNotifications = useCallback(async () => {
@@ -42,6 +43,19 @@ const Navbar = () => {
       return () => clearInterval(interval);
     }
   }, [fetchNotifications, user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -107,7 +121,7 @@ const Navbar = () => {
             {user ? (
               <>
                 {/* Notifications */}
-                <div className="relative">
+                <div className="relative" ref={notificationRef}>
                   <button
                     onClick={() => setShowPopup(!showPopup)}
                     className="relative p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
@@ -162,7 +176,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Profile dropdown */}
-                <Menu as="div" className="relative">
+                <Menu as="div" className="relative z-50">
                   <Menu.Button className="flex items-center space-x-2 text-sm focus:outline-none">
                     <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
                       {user.username.charAt(0).toUpperCase()}
@@ -183,7 +197,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <Link
                             to="/owner-dashboard"
-                            className={`$${
+                            className={`${
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
@@ -195,7 +209,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <Link
                             to="/profile"
-                            className={`$${
+                            className={`${
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
@@ -207,7 +221,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <button
                             onClick={handleLogout}
-                            className={`$${
+                            className={`${
                               active ? 'bg-gray-100' : ''
                             } block w-full text-left px-4 py-2 text-sm text-gray-700`}
                           >
