@@ -1,10 +1,14 @@
 import { Router } from 'express';
-import { addImageController, createItemController, deleteItemController, getItemController, getItemImagesController, searchItemsController, updateItemAvailabilityController, updateItemController } from '../controllers/item.controller.js';
+import { addImageController, createItemController, deleteItemController, getAllItemsController, getItemController, searchItemsController, updateItemAvailabilityController, updateItemController } from '../controllers/item.controller.js';
 import verifyToken from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 router.get('/', searchItemsController);
+
+
+router.get('/all', getAllItemsController); // GET /api/items/all
+
 // GET http://localhost:3000/api/items
 // GET http://localhost:3000/api/items?q=calculator
 // GET http://localhost:3000/api/items?categoryId=1 (Assuming category ID 1 exists)
@@ -24,7 +28,6 @@ router.post('/:itemId/images', verifyToken, addImageController);
 
 router.put('/:itemId/status', verifyToken, updateItemAvailabilityController);
 
-router.get('/:itemId/images', getItemImagesController);
 
 
 export default router;

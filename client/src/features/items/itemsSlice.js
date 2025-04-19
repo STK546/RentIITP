@@ -9,7 +9,7 @@ export const fetchItems = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       console.log('Dispatching fetchItems action');
-      const response = await axios.get(`${API_URL}/items`, {
+      const response = await axios.get(`${API_URL}/items/all`, {
         withCredentials: true
       });
       console.log('Items fetched in Redux:', response.data);

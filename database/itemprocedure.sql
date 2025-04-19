@@ -614,3 +614,31 @@ END //
 
 -- Reset the delimiter back to semicolon
 DELIMITER ;
+
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS GetAllItems; //
+
+CREATE PROCEDURE GetAllItems()
+BEGIN
+    SELECT
+        item_id,
+        owner_id,
+        category_id,
+        name,
+        description,
+        rental_price,
+        rental_unit,
+        item_condition,
+        availability_status,
+        location_description,
+        date_added,
+        max_rental_duration
+    FROM Items
+    ORDER BY date_added DESC;
+END //
+
+DELIMITER ;
+
+call GetAllItems();
