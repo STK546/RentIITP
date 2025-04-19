@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-// import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import rentalsApi from '../services/api/rentals';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-// import Button from '../components/common/Button';
+import Footer from '../components/layout/Footer';
 
 const MyRentals = () => {
   const { user } = useAuth();
@@ -12,6 +12,7 @@ const MyRentals = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('current');
+  const [itemImages, setItemImages] = useState({});
 
   const fetchRentals = async () => {
     if (!user) {
@@ -67,6 +68,22 @@ const MyRentals = () => {
         current: currentRentals,
         past: pastRentals
       });
+
+      // Fetch images for all rentals
+      const imagesMap = {};
+      for (const rental of sortedRentals) {
+        try {
+          const imageResponse = await axios.get(`http://localhost:3000/api/items/${rental.item_id}/images`);
+          if (imageResponse.data?.images) {
+            const primaryImage = imageResponse.data.images.find(img => img.is_primary === 1) || imageResponse.data.images[0];
+            imagesMap[rental.item_id] = primaryImage?.image_url;
+          }
+        } catch (err) {
+          console.error(`Error fetching images for item ${rental.item_id}:`, err);
+        }
+      }
+      setItemImages(imagesMap);
+
     } catch (err) {
       console.error('Error fetching rentals:', err);
       if (err.response) {
@@ -122,46 +139,93 @@ const MyRentals = () => {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-gray-600">Please log in to view your rentals.</p>
-      </div>
+      <>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Access Required</h2>
+              <p className="text-gray-600 mb-6">Please log in to view your rentals.</p>
+              <Link
+                to="/login"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-800"
+              >
+                Log In
+              </Link>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
     );
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 border-l-4 border-red-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">
-                {error}
-              </p>
+      <>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-lg font-medium text-red-800">Error Loading Rentals</h3>
+                  <p className="mt-2 text-red-700">{error}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
   const RentalCard = ({ rental }) => {
     const isOwner = rental.owner_id === user.userId;
     const isRenter = rental.renter_id === user.userId;
+
+    // Calculate amount till now for active rentals
+    const calculateAmountTillNow = () => {
+      if (rental.rental_status.toLowerCase() !== 'active') {
+        return rental.total_amount;
+      }
+
+      const startDate = new Date(rental.start_date);
+      const currentDate = new Date();
+      const endDate = new Date(rental.end_date);
+      
+      // If current date is past end date, return total amount
+      if (currentDate > endDate) {
+        return rental.total_amount;
+      }
+
+      // Calculate days elapsed
+      const daysElapsed = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24));
+      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      
+      // Calculate prorated amount
+      const amountPerDay = rental.total_amount / totalDays;
+      return Math.round(amountPerDay * daysElapsed);
+    };
 
     const handleStatusChange = async (newStatus) => {
       try {
@@ -179,7 +243,7 @@ const MyRentals = () => {
 
         if (response.status === 200) {
           toast.success('Rental status updated successfully');
-          fetchRentals(); // Refresh the data
+          fetchRentals();
         }
       } catch (err) {
         console.error('Error updating rental status:', err);
@@ -189,20 +253,22 @@ const MyRentals = () => {
     };
 
     const renderActionButtons = () => {
+      const buttonBaseClasses = "px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2";
+      
       switch (rental.rental_status.toLowerCase()) {
         case 'requested':
           if (isOwner) {
             return (
-              <div className="space-x-2">
+              <div className="flex space-x-3">
                 <button
                   onClick={() => handleStatusChange('confirmed')}
-                  className="text-green-600 hover:text-green-900"
+                  className={`${buttonBaseClasses} bg-green-100 text-green-700 hover:bg-green-200 focus:ring-green-500`}
                 >
                   Confirm
                 </button>
                 <button
                   onClick={() => handleStatusChange('rejected')}
-                  className="text-red-600 hover:text-red-900"
+                  className={`${buttonBaseClasses} bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500`}
                 >
                   Reject
                 </button>
@@ -212,9 +278,9 @@ const MyRentals = () => {
             return (
               <button
                 onClick={() => handleStatusChange('cancelled')}
-                className="text-red-600 hover:text-red-900"
+                className={`${buttonBaseClasses} bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500`}
               >
-                Cancel
+                Cancel Request
               </button>
             );
           }
@@ -223,16 +289,16 @@ const MyRentals = () => {
         case 'confirmed':
           if (isRenter) {
             return (
-              <div className="space-x-2">
+              <div className="flex space-x-3">
                 <button
                   onClick={() => handleStatusChange('active')}
-                  className="text-blue-600 hover:text-blue-900"
+                  className={`${buttonBaseClasses} bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500`}
                 >
                   Mark as Active
                 </button>
                 <button
                   onClick={() => handleStatusChange('cancelled')}
-                  className="text-red-600 hover:text-red-900"
+                  className={`${buttonBaseClasses} bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500`}
                 >
                   Cancel
                 </button>
@@ -242,7 +308,7 @@ const MyRentals = () => {
             return (
               <button
                 onClick={() => handleStatusChange('cancelled')}
-                className="text-red-600 hover:text-red-900"
+                className={`${buttonBaseClasses} bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500`}
               >
                 Cancel
               </button>
@@ -251,11 +317,11 @@ const MyRentals = () => {
           return null;
 
         case 'active':
-          if (isOwner) {
+          if (isOwner || isRenter) {
             return (
               <button
                 onClick={() => handleStatusChange('completed')}
-                className="text-gray-600 hover:text-gray-900"
+                className={`${buttonBaseClasses} bg-green-100 text-green-700 hover:bg-green-200 focus:ring-green-500`}
               >
                 Mark as Completed
               </button>
@@ -269,26 +335,57 @@ const MyRentals = () => {
     };
 
     return (
-      <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-xl font-semibold mb-2">{rental.item_name}</h3>
-            <p className="text-gray-600">
-              <span className="font-medium">{isOwner ? 'Renter' : 'Owner'}:</span> {isOwner ? rental.renter_username : rental.owner_username}
-            </p>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+        <div className="flex">
+          <div className="flex-shrink-0 w-52 h-52 bg-gray-100">
+            {itemImages[rental.item_id] && (
+              <img
+                src={itemImages[rental.item_id]}
+                alt={rental.item_name}
+                className="object-contain w-full h-full p-2"
+              />
+            )}
           </div>
-          
-          <div className="space-y-2">
-            <p className="text-gray-600">
-              <span className="font-medium">Dates:</span>{' '}
-              {formatDate(rental.start_date)} - {formatDate(rental.end_date)}
-            </p>
-            <p className="text-lg font-bold">₹{rental.agreed_price}</p>
-            <div className="flex justify-between items-center">
+          <div className="flex-1 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {rental.item_name}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {isOwner ? 'Rented to' : 'Rented from'}: {isOwner ? rental.renter_name : rental.username}
+                </p>
+              </div>
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(rental.rental_status)}`}>
                 {rental.rental_status.charAt(0).toUpperCase() + rental.rental_status.slice(1)}
               </span>
-              {renderActionButtons()}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Start Date</p>
+                <p className="text-sm text-gray-900">{formatDate(rental.start_date)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">End Date</p>
+                <p className="text-sm text-gray-900">{formatDate(rental.end_date)}</p>
+              </div>
+              <div className="col-span-2 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {rental.rental_status.toLowerCase() === 'active' ? 'Amount Till Now' : 'Total Amount'}
+                  </p>
+                  <p className="text-sm text-gray-900">₹{calculateAmountTillNow()}</p>
+                  {rental.rental_status.toLowerCase() === 'active' && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Final amount: ₹{rental.total_amount}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  {renderActionButtons()}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -297,54 +394,79 @@ const MyRentals = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">My Rentals</h1>
+    <>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">My Rentals</h1>
+            <Link
+              to="/browse"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-800"
+            >
+              Browse More Items
+            </Link>
+          </div>
 
-      <div className="flex space-x-4 mb-8">
-        <button
-          onClick={() => setActiveTab('current')}
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === 'current'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          Current Rentals ({rentals.current.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('past')}
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === 'past'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          Past Rentals ({rentals.past.length})
-        </button>
+          <div className="mb-8">
+            <nav className="flex space-x-4" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab('current')}
+                className={`px-3 py-2 text-sm font-medium rounded-md ${
+                  activeTab === 'current'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Current Rentals ({rentals.current.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('past')}
+                className={`px-3 py-2 text-sm font-medium rounded-md ${
+                  activeTab === 'past'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Past Rentals ({rentals.past.length})
+              </button>
+            </nav>
+          </div>
+
+          <div className="space-y-6">
+            {activeTab === 'current' && rentals.current.length === 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Current Rentals</h3>
+                <p className="text-gray-500 mb-4">You don't have any active rentals at the moment.</p>
+                <Link
+                  to="/browse"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Browse Available Items
+                </Link>
+              </div>
+            )}
+
+            {activeTab === 'past' && rentals.past.length === 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Past Rentals</h3>
+                <p className="text-gray-500">Your rental history will appear here.</p>
+              </div>
+            )}
+
+            {activeTab === 'current' &&
+              rentals.current.map((rental) => (
+                <RentalCard key={rental.rental_id} rental={rental} />
+              ))}
+
+            {activeTab === 'past' &&
+              rentals.past.map((rental) => (
+                <RentalCard key={rental.rental_id} rental={rental} />
+              ))}
+          </div>
+        </div>
       </div>
-
-      {activeTab === 'current' ? (
-        rentals.current.length === 0 ? (
-          <p className="text-gray-600">No current rentals found.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rentals.current.map((rental) => (
-              <RentalCard key={rental.rental_id} rental={rental} />
-            ))}
-          </div>
-        )
-      ) : (
-        rentals.past.length === 0 ? (
-          <p className="text-gray-600">No past rentals found.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rentals.past.map((rental) => (
-              <RentalCard key={rental.rental_id} rental={rental} />
-            ))}
-          </div>
-        )
-      )}
-    </div>
+      <Footer />
+    </>
   );
 };
 

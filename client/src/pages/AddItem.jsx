@@ -2,24 +2,21 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 const AddItem = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    categoryId: '',
-    name: '',
+    title: '',
     description: '',
+    category: 'Electronics',
+    condition: 'New',
     rentalPrice: '',
-    rentalUnit: 'day',
-    itemCondition: 'good',
-    locationDescription: '',
-    maxRentalDuration: '',
-    primaryImageUrl: ''
+    rentalPeriod: 'Per Hour',
+    image: null
   });
   
-  const [image, setImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -37,17 +34,35 @@ const AddItem = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e) => {
+    e.preventDefault();
+    const file = e.target.files?.[0] || e.dataTransfer?.files?.[0];
+    
     if (file) {
-      setImage(file);
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
+
       setPreviewImage(URL.createObjectURL(file));
+      setFormData(prev => ({
+        ...prev,
+        image: file
+      }));
     }
   };
 
   const removeImage = () => {
-    setImage(null);
     setPreviewImage(null);
+    setFormData(prev => ({
+      ...prev,
+      image: null
+    }));
   };
 
   const uploadToCloudinary = async (file) => {
@@ -70,23 +85,21 @@ const AddItem = () => {
     setUploading(true);
 
     try {
-      if (!image) {
+      if (!formData.image) {
         throw new Error('Please upload an image for your item');
       }
 
       // Upload image to Cloudinary
-      const imageUrl = await uploadToCloudinary(image);
+      const imageUrl = await uploadToCloudinary(formData.image);
 
       // Create the request data object
       const requestData = {
-        categoryId: formData.categoryId,
-        name: formData.name,
+        name: formData.title,
         description: formData.description,
-        rentalPrice: formData.rentalPrice,
-        rentalUnit: formData.rentalUnit,
-        itemCondition: formData.itemCondition,
-        locationDescription: formData.locationDescription,
-        maxRentalDuration: formData.maxRentalDuration,
+        categoryId: getCategoryId(formData.category),
+        itemCondition: formData.condition,
+        rentalPrice: parseFloat(formData.rentalPrice),
+        rentalUnit: getRentalUnit(formData.rentalPeriod),
         primaryImageUrl: imageUrl
       };
 
@@ -115,240 +128,213 @@ const AddItem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-              List an Item for Rent
-            </h3>
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-800">{error}</p>
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Item Name */}
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Add New Item</h1>
+        <p className="text-gray-600 mb-6">Fill in the details below to list your item for rent</p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Item Information Box */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Item Information</h2>
+            
+            <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Item Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Item Title</label>
                 <input
                   type="text"
-                  name="name"
-                  id="name"
-                  required
-                  value={formData.name}
+                  name="title"
+                  placeholder="Enter item title"
+                  value={formData.title}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
-              {/* Category */}
               <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">
-                  Category
-                </label>
-                <select
-                  name="categoryId"
-                  id="categoryId"
-                  required
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                >
-                  <option value="">Select a category</option>
-                  <option value="1">Books</option>
-                  <option value="2">Electronics</option>
-                  <option value="3">Sports Equipment</option>
-                  <option value="4">Clothing</option>
-                  <option value="5">Other</option>
-                </select>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   name="description"
-                  id="description"
-                  required
+                  placeholder="Describe your item"
                   value={formData.description}
                   onChange={handleChange}
-                  rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
-              {/* Rental Price */}
-              <div>
-                <label htmlFor="rentalPrice" className="block text-sm font-medium text-gray-700">
-                  Rental Price
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input
-                    type="number"
-                    name="rentalPrice"
-                    id="rentalPrice"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={formData.rentalPrice}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    name="category"
+                    value={formData.category}
                     onChange={handleChange}
-                    className="block w-full rounded-md border-gray-300 pr-12 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center">
-                    <select
-                      name="rentalUnit"
-                      value={formData.rentalUnit}
-                      onChange={handleChange}
-                      className="h-full rounded-r-md border-transparent bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    >
-                      <option value="hour">per hour</option>
-                      <option value="day">per day</option>
-                      <option value="week">per week</option>
-                      <option value="month">per month</option>
-                    </select>
-                  </div>
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option>Electronics</option>
+                    <option>Books</option>
+                    <option>Furniture</option>
+                    <option>Sports</option>
+                    <option>Clothing</option>
+                    <option>Others</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                  <select
+                    name="condition"
+                    value={formData.condition}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option>New</option>
+                    <option>Like New</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                  </select>
                 </div>
               </div>
-
-              {/* Item Condition */}
-              <div>
-                <label htmlFor="itemCondition" className="block text-sm font-medium text-gray-700">
-                  Item Condition
-                </label>
-                <select
-                  name="itemCondition"
-                  id="itemCondition"
-                  required
-                  value={formData.itemCondition}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                >
-                  <option value="new">New</option>
-                  <option value="like new">Like New</option>
-                  <option value="good">Good</option>
-                  <option value="fair">Fair</option>
-                </select>
-              </div>
-
-              {/* Location Description */}
-              <div>
-                <label htmlFor="locationDescription" className="block text-sm font-medium text-gray-700">
-                  Location Description
-                </label>
-                <input
-                  type="text"
-                  name="locationDescription"
-                  id="locationDescription"
-                  required
-                  value={formData.locationDescription}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-              </div>
-
-              {/* Max Rental Duration */}
-              <div>
-                <label htmlFor="maxRentalDuration" className="block text-sm font-medium text-gray-700">
-                  Maximum Rental Duration (days)
-                </label>
-                <input
-                  type="number"
-                  name="maxRentalDuration"
-                  id="maxRentalDuration"
-                  min="1"
-                  value={formData.maxRentalDuration}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-              </div>
-
-              {/* Primary Image URL */}
-              {/* <div>
-                <label htmlFor="primaryImageUrl" className="block text-sm font-medium text-gray-700">
-                  Primary Image URL
-                </label>
-                <input
-                  type="url"
-                  name="primaryImageUrl"
-                  id="primaryImageUrl"
-                  value={formData.primaryImageUrl}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-              </div> */}
-
-              {/* Image Upload Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Item Image
-                </label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
-                  <div className="space-y-1 text-center">
-                    {!previewImage && (
-                      <>
-                        <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="flex text-sm text-gray-500">
-                          <label htmlFor="image" className="relative cursor-pointer rounded-md font-medium text-gray-600 hover:text-gray-800 focus-within:outline-none">
-                            <span>Upload an image</span>
-                            <input
-                              id="image"
-                              name="image"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="sr-only"
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                      </>
-                    )}
-
-                    {/* Single Image Preview */}
-                    {previewImage && (
-                      <div className="relative">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="max-h-48 mx-auto rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={removeImage}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors"
-                        >
-                          <XMarkIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={uploading}
-                  className={`px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200 ${
-                    uploading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {uploading ? 'Listing...' : 'List Item'}
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
+
+          {/* Pricing Box */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Pricing</h2>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rental Price</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <input
+                      type="number"
+                      name="rentalPrice"
+                      placeholder="0.00"
+                      value={formData.rentalPrice}
+                      onChange={handleChange}
+                      className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rental Period</label>
+                  <select
+                    name="rentalPeriod"
+                    value={formData.rentalPeriod}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option>Per Hour</option>
+                    <option>Per Day</option>
+                    <option>Per Week</option>
+                    <option>Per Month</option>
+                  </select>
+                </div>
+              </div>
+
+              
+            </div>
+          </div>
+
+          {/* Images Box */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Images</h2>
+            
+            {previewImage ? (
+              <div className="mb-4">
+                <div className="relative inline-block">
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="max-h-48 rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-lg p-6"
+                onDrop={handleImageUpload}
+                onDragOver={(e) => e.preventDefault()}
+              >
+                <div className="text-center">
+                  <div className="mx-auto h-12 w-12 text-gray-400">
+                    <svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="mt-4 flex text-sm text-gray-600 justify-center">
+                    <label className="relative cursor-pointer rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+                      <span>Drag and drop image here or click to upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    PNG or JPG (max. 5MB)
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={uploading}
+              className="px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-gray-800 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploading ? 'Saving...' : 'Save Item'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 bg-white text-sm text-gray-700 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
+};
+
+const getCategoryId = (category) => {
+  const categoryMap = {
+    'Electronics': 1,
+    'Books': 2,
+    'Furniture': 3,
+    'Sports': 4,
+    'Clothing': 5,
+    'Others': 6
+  };
+  return categoryMap[category] || 6; // Default to Others if category not found
+};
+
+const getRentalUnit = (period) => {
+  const unitMap = {
+    'Per Hour': 'hour',
+    'Per Day': 'day',
+    'Per Week': 'week',
+    'Per Month': 'month'
+  };
+  return unitMap[period] || 'day'; // Default to day if period not found
 };
 
 export default AddItem; 
