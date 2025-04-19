@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const contributors = [
-    { name: 'Malaram', role: 'Full Stack Developer', github: 'https://github.com/Malaram' },
-    { name: 'Sarthak', role: 'Frontend Developer', github: 'https://github.com/STK546' },
-    { name: 'Kushal', role: 'Backend Developer', github: 'https://github.com/Krishal23' },
-    { name: 'Kulshrestha', role: 'Full Stack Developer', github: 'https://github.com/kulshreshthasingh' },
-    { name: 'Ashis', role: 'UI/UX Developer', github: 'https://github.com/Ashis' },
-    { name: 'Nani', role: 'Backend Developer', github: 'https://github.com/Nani' }
+    { name: 'Malaram', role: '', github: 'https://github.com/Malaram' },
+    { name: 'Sarthak', role: '', github: 'https://github.com/STK546' },
+    { name: 'Kushal', role: '', github: 'https://github.com/Krishal23' },
+    { name: 'Kulshrestha', role: '', github: 'https://github.com/kulshreshthasingh' },
+    { name: 'Ashis', role: '', github: 'https://github.com/Ashis' },
+    { name: 'Nani', role: '', github: 'https://github.com/Nani' }
   ];
 
   return (
@@ -102,6 +102,34 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-700">
+          {/* Contributors Section */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-white text-center mb-6">Contributors</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {contributors.map((contributor) => (
+                <a
+                  key={contributor.name}
+                  href={contributor.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center p-4 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors duration-200"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center mb-2">
+                    <span className="text-white text-lg font-medium">
+                      {contributor.name[0]}
+                    </span>
+                  </div>
+                  <h4 className="text-white font-medium text-sm text-center">
+                    {contributor.name}
+                  </h4>
+                  <p className="text-gray-400 text-xs text-center mt-1">
+                    {contributor.role}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </div>
+
           <p className="text-center text-gray-400 text-sm">
             © {new Date().getFullYear()} RentIITP. All rights reserved.
           </p>

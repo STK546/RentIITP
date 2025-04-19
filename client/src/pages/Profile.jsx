@@ -5,7 +5,18 @@ import { updateProfile } from '../features/auth/authSlice';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { useTheme } from '../hooks/useTheme';
-import { UserCircleIcon, PhoneIcon, HomeIcon, AcademicCapIcon, IdentificationIcon } from '@heroicons/react/24/outline';
+import { 
+  UserCircleIcon, 
+  PhoneIcon, 
+  HomeIcon, 
+  AcademicCapIcon, 
+  IdentificationIcon,
+  CurrencyRupeeIcon,
+  ShoppingBagIcon,
+  HeartIcon,
+  StarIcon
+} from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -64,6 +75,20 @@ const Profile = () => {
     'D Quarters',
   ];
 
+  // Mock dashboard data (replace with actual data from your backend)
+  const dashboardStats = {
+    totalRentals: 12,
+    activeRentals: 3,
+    totalEarnings: 2500,
+    wishlistedItems: 8,
+    rating: 4.5,
+    recentActivity: [
+      { id: 1, type: 'rental', item: 'Electronics Book', date: '2024-02-15', status: 'active' },
+      { id: 2, type: 'return', item: 'Calculator', date: '2024-02-10', status: 'completed' },
+      { id: 3, type: 'listing', item: 'Study Table', date: '2024-02-08', status: 'active' }
+    ]
+  };
+
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-indigo-50 to-purple-50'}`}>
@@ -77,7 +102,7 @@ const Profile = () => {
 
   return (
     <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 ${isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-indigo-50 to-purple-50'}`}>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Profile Header Card */}
         <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl overflow-hidden mb-8`}>
           <div className="relative h-48 bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -135,6 +160,113 @@ const Profile = () => {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Dashboard Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-6`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Rentals</p>
+                <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.totalRentals}</p>
+              </div>
+              <div className={`p-3 rounded-full ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}`}>
+                <ShoppingBagIcon className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+              </div>
+            </div>
+          </div>
+
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-6`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Active Rentals</p>
+                <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.activeRentals}</p>
+              </div>
+              <div className={`p-3 rounded-full ${isDarkMode ? 'bg-green-900/20' : 'bg-green-100'}`}>
+                <ShoppingBagIcon className={`w-6 h-6 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+              </div>
+            </div>
+          </div>
+
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-6`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings</p>
+                <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>₹{dashboardStats.totalEarnings}</p>
+              </div>
+              <div className={`p-3 rounded-full ${isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-100'}`}>
+                <CurrencyRupeeIcon className={`w-6 h-6 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
+              </div>
+            </div>
+          </div>
+
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-6`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Wishlisted Items</p>
+                <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.wishlistedItems}</p>
+              </div>
+              <div className={`p-3 rounded-full ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
+                <HeartIcon className={`w-6 h-6 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-6 mb-8`}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Recent Activity</h2>
+            <Link 
+              to="/my-rentals" 
+              className={`text-sm font-medium ${
+                isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'
+              }`}
+            >
+              View All
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {dashboardStats.recentActivity.map((activity) => (
+              <div 
+                key={activity.id} 
+                className={`flex items-center justify-between p-4 rounded-lg ${
+                  isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={`p-2 rounded-full ${
+                    activity.type === 'rental' 
+                      ? isDarkMode ? 'bg-blue-900/20 text-blue-400' : 'bg-blue-100 text-blue-600'
+                      : activity.type === 'return'
+                      ? isDarkMode ? 'bg-green-900/20 text-green-400' : 'bg-green-100 text-green-600'
+                      : isDarkMode ? 'bg-purple-900/20 text-purple-400' : 'bg-purple-100 text-purple-600'
+                  }`}>
+                    <ShoppingBagIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {activity.item}
+                    </p>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {new Date(activity.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  activity.status === 'active'
+                    ? isDarkMode ? 'bg-green-900/20 text-green-400' : 'bg-green-100 text-green-800'
+                    : isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {activity.status}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
