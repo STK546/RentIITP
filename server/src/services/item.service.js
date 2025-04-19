@@ -169,9 +169,51 @@ async function deleteItem(itemId, actingUserId) {
     }
 }
 
+async function getItemImages(itemId) {
+    // Simple SELECT query to get all images for the item
+    // Orders by primary image first, then by upload date (newest first)
+    const sql = `
+        SELECT
+            image_id,
+            item_id,
+            image_url,
+            is_primary,
+            upload_date
+        FROM ItemImages
+        WHERE item_id = ?
+        ORDER BY is_primary DESC, upload_date DESC
+    `;
+    try {
+        // Execute the query
+        const [rows] = await pool.query(sql, [itemId]);
+        // Return the array of image objects (will be empty if item has no images or item doesn't exist)
+        return rows;
+    } catch (error) {
+        console.error('Error fetching item images:', error);
+        throw new Error('Database error fetching item images.');
+    }
+}
 
+async function getItemImagesController(req, res, next) {
+    const itemId = parseInt(req.params.itemId, 10); // Get item ID from URL parameter
 
+    // Validate the itemId
+    if (isNaN(itemId)) {
+        return res.status(400).json({ message: 'Invalid Item ID provided.' });
+    }
 
+    try {
+        // Call the service function to get the images
+        const images = await getItemImages(itemId);
+
+        // Send the results back. Even an empty array is a success (item might exist with no images).
+        res.status(200).json({ images: images }); // Wrap the array in an 'images' key
+
+    } catch (error) {
+        // Pass database errors or other exceptions to the global error handler
+        next(error);
+    }
+}
 
 export {
     searchItems,
@@ -181,5 +223,7 @@ export {
     updateItemAvailability,
     addItemImage,
     deleteItem,
-    getAllItems
+    getAllItems,
+    getItemImages,
+    getItemImagesController
 };
