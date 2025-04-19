@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { addImageController, createItemController, deleteItemController, getAllItemsController, getItemController, searchItemsController, updateItemAvailabilityController, updateItemController } from '../controllers/item.controller.js';
 import verifyToken from '../middleware/auth.middleware.js';
+import { getItemImagesController } from '../services/item.service.js';
 
 const router = Router();
 
@@ -28,6 +29,6 @@ router.post('/:itemId/images', verifyToken, addImageController);
 
 router.put('/:itemId/status', verifyToken, updateItemAvailabilityController);
 
-
+router.get('/:itemId/images', getItemImagesController);
 
 export default router;
