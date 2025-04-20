@@ -16,6 +16,7 @@ import ItemDetails from '../pages/ItemDetails';
 import Dashboard from '../pages/Dashboard';
 import TestWishlist from '../pages/TestWishlist';
 import OwnerDashboard from '../pages/OwnerDashboard';
+import MyListings from '../pages/MyListings';
 
 const AppRoutes = () => {
   return (
@@ -37,6 +38,11 @@ const AppRoutes = () => {
       <Route path="/my-rentals" element={
         <PrivateRoute>
           <MyRentals />
+        </PrivateRoute>
+      } />
+      <Route path="/my-listings" element={
+        <PrivateRoute>
+          <MyListings />
         </PrivateRoute>
       } />
       <Route path="/notifications" element={

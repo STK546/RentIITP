@@ -642,3 +642,32 @@ END //
 DELIMITER ;
 
 call GetAllItems();
+
+
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS GetItemsByOwner;//
+
+CREATE PROCEDURE GetItemsByOwner(
+    IN p_owner_id INT
+)
+BEGIN
+    SELECT
+        item_id,
+        category_id,
+        name,
+        description,
+        rental_price,
+        rental_unit,
+        item_condition,
+        availability_status,
+        location_description,
+        date_added,
+        max_rental_duration
+    FROM Items
+    WHERE owner_id = p_owner_id
+    ORDER BY date_added DESC;
+END;//
+
+DELIMITER ;

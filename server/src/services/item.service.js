@@ -1,6 +1,8 @@
 import pool from '../../config/db.config.js';
 
 
+
+
  async function getAllItems() {
     const sql = `CALL GetAllItems()`;
     try {
@@ -12,6 +14,13 @@ import pool from '../../config/db.config.js';
     }
   }
 
+
+  async function getItemsByOwner(ownerId) {
+    const [rows] = await pool.query('CALL GetItemsByOwner(?)', [ownerId]);
+    return rows[0];
+  }
+  
+  
 async function searchItems(filters) {
     const {
         searchTerms = null, 
@@ -225,5 +234,6 @@ export {
     deleteItem,
     getAllItems,
     getItemImages,
-    getItemImagesController
+    getItemImagesController,
+    getItemsByOwner
 };

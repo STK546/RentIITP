@@ -241,7 +241,19 @@ const Navbar = () => {
                               active ? 'bg-gray-600' : ''
                             } block px-4 py-2 text-sm text-gray-300 hover:text-white`}
                           >
-                            Your Profile
+                            Profile
+                          </Link>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            to="/my-listings"
+                            className={`${
+                              active ? 'bg-gray-600' : ''
+                            } block px-4 py-2 text-sm text-gray-300 hover:text-white`}
+                          >
+                            My-Listings
                           </Link>
                         )}
                       </Menu.Item>

@@ -1,4 +1,4 @@
-import { addItemImage, createItem, deleteItem, getAllItems, getItemDetails, searchItems, updateItemAvailability, updateItemDetails } from '../services/item.service.js';
+import { addItemImage, createItem, deleteItem, getAllItems, getItemDetails, getItemsByOwner, searchItems, updateItemAvailability, updateItemDetails } from '../services/item.service.js';
 
 
 async function searchItemsController(req, res, next) {
@@ -29,6 +29,19 @@ async function searchItemsController(req, res, next) {
     }
 }
 
+
+
+async function getOwnerItems(req, res) {
+    try {
+      const ownerId = req.userId;
+      const items = await getItemsByOwner(ownerId);
+      res.status(200).json(items);
+    } catch (err) {
+      console.error('Error fetching owner items:', err);
+      res.status(500).json({ message: 'Failed to fetch owner items.' });
+    }
+  }
+  
 
 
 async function createItemController(req, res, next) {
@@ -253,5 +266,6 @@ export  {
     updateItemController,
     updateItemAvailabilityController,
     addImageController,
-    deleteItemController
+    deleteItemController,
+    getOwnerItems
 };
