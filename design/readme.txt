@@ -120,7 +120,7 @@ Header Navigation:
 
 Logo (RentIITP), links to Home, Browse, List Item, My Rentals, Wishlist.
 
-Icons for theme toggle, notifications, and search.
+Icons for theme toggle and notifications.
 
 Main Section:
 
@@ -173,10 +173,6 @@ Consistency:
 
 All pages share a clean, minimal design with ample whitespace.
 
-Responsiveness:
-
-Layout adapts for mobile and desktop use.
-
 7. System Flow
 User registers and logs in.
 
@@ -203,7 +199,21 @@ Integrate payment gateway for secure transactions.
 Implement overdue reminders and more granular notification settings.
 
 9. Getting Started
-Database Setup:
+Database Setup:for .env file in server
+
+{# Database Configuration
+DB_HOST=localhost
+DB_USER=root 
+DB_PASSWORD=enter_your_password
+DB_DATABASE=your_database_name
+DB_CONNECTION_LIMIT=10
+
+# JWT Configuration
+JWT_SECRET=zdgx21xqriuny8@jfniauh@gaelgrjm&amaw9$mf@iefa
+JWT_EXPIRES_IN=1h 
+
+# Server Configuration
+PORT=3000}
 
 Run the table creation scripts.
 
