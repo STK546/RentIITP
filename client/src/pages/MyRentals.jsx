@@ -205,30 +205,6 @@ const MyRentals = () => {
     const isOwner = rental.owner_id === user.userId;
     const isRenter = rental.renter_id === user.userId;
 
-    // Calculate amount till now for active rentals
-    const calculateAmountTillNow = () => {
-      if (rental.rental_status.toLowerCase() !== 'active') {
-        return rental.total_amount;
-      }
-
-      const startDate = new Date(rental.start_date);
-      const currentDate = new Date();
-      const endDate = new Date(rental.end_date);
-      
-      // If current date is past end date, return total amount
-      if (currentDate > endDate) {
-        return rental.total_amount;
-      }
-
-      // Calculate days elapsed
-      const daysElapsed = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24));
-      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-      
-      // Calculate prorated amount
-      const amountPerDay = rental.total_amount / totalDays;
-      return Math.round(amountPerDay * daysElapsed);
-    };
-
     const handleStatusChange = async (newStatus) => {
       try {
         const response = await axios.put(
@@ -372,22 +348,21 @@ const MyRentals = () => {
                 <p className={`text-sm font-medium ${getThemeClasses.secondaryText}`}>End Date</p>
                 <p className={`text-sm ${getThemeClasses.text}`}>{formatDate(rental.end_date)}</p>
               </div>
-              <div className="col-span-2 flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-medium ${getThemeClasses.secondaryText}`}>
-                    {rental.rental_status.toLowerCase() === 'active' ? 'Amount Till Now' : 'Total Amount'}
+              <div className="col-span-2">
+                <div className="flex items-center space-x-2">
+                  <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <p className={`text-sm ${getThemeClasses.text}`}>
+                    {rental.location || 'IIT Patna Campus'}
                   </p>
-                  <p className={`text-sm ${getThemeClasses.text}`}>₹{calculateAmountTillNow()}</p>
-                  {rental.rental_status.toLowerCase() === 'active' && (
-                    <p className={`text-xs ${getThemeClasses.secondaryText} mt-1`}>
-                      Final amount: ₹{rental.total_amount}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  {renderActionButtons()}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-3 flex justify-end">
+              {renderActionButtons()}
             </div>
           </div>
         </div>
@@ -397,8 +372,8 @@ const MyRentals = () => {
 
   return (
     <>
-      <div className={`min-h-screen ${getThemeClasses.background} py-12 px-4 sm:px-6 lg:px-8`}>
-        <div className="max-w-7xl mx-auto">
+      <div className={`min-h-screen ${getThemeClasses.background}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
             <h1 className={`text-3xl font-bold ${getThemeClasses.text}`}>My Rentals</h1>
             <Link
