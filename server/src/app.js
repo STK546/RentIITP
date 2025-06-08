@@ -19,7 +19,7 @@ const allowedOrigins = [
     // 'http://localhost:3000',
     // 'http://localhost:3001',
     'https://rentiitp.onrender.com',
-    'https://rentiitp.vercel.app',
+    'https://rent-iitp.vercel.app',
     'https://rentiitp.com',
 
 ];
