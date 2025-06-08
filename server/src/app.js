@@ -16,9 +16,12 @@ app.use(urlencoded({ extended: true }));
 
 // CORS configuration
 const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://rentiitp.onrender.com'
+    // 'http://localhost:3000',
+    // 'http://localhost:3001',
+    'https://rentiitp.onrender.com',
+    'https://rentiitp.vercel.app',
+    'https://rentiitp.com',
+
 ];
 
 app.use(cors({
