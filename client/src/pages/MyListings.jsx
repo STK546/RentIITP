@@ -15,7 +15,7 @@ const MyListings = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/items/owner', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/items/owner`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -43,7 +43,7 @@ const MyListings = () => {
   const handleDelete = async (itemId) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        const response = await axios.delete(`http://localhost:3000/api/items/${itemId}`, {
+        const response = await axios.delete(`${process.env.REACT_APP_API_URL}/items/${itemId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'

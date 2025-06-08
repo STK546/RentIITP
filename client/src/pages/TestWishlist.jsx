@@ -25,7 +25,7 @@ const Wishlist = () => {
       }
 
       try {
-        const response = await axios.get('http://localhost:3000/api/wishlist', {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/wishlist`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -39,7 +39,7 @@ const Wishlist = () => {
           const imagesMap = {};
           for (const item of response.data.wishlist) {
             try {
-              const imageResponse = await axios.get(`http://localhost:3000/api/items/${item.item_id}/images`);
+              const imageResponse = await axios.get(`${process.env.REACT_APP_API_URL}/items/${item.item_id}/images`);
               if (imageResponse.data?.images) {
                 const primaryImage = imageResponse.data.images.find(img => img.is_primary === 1) || imageResponse.data.images[0];
                 imagesMap[item.item_id] = primaryImage?.image_url;
@@ -70,7 +70,7 @@ const Wishlist = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:3000/api/wishlist/${itemId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/wishlist/${itemId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

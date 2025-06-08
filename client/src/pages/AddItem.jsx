@@ -134,7 +134,7 @@ const AddItem = () => {
 
       // Make the API request with credentials
       const response = await axios.post(
-        'http://localhost:3000/api/items', 
+        `${process.env.REACT_APP_API_URL}/items`, 
         requestData,
         {
           withCredentials: true,

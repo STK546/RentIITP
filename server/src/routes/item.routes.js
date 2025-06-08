@@ -10,12 +10,12 @@ router.get('/', searchItemsController);
 
 router.get('/all', getAllItemsController); 
 
-// GET http://localhost:3000/api/items
-// GET http://localhost:3000/api/items?q=calculator
-// GET http://localhost:3000/api/items?categoryId=1 
-// GET http://localhost:3000/api/items?status=available
-// GET http://localhost:3000/api/items?minPrice=50&maxPrice=200
-// GET http://localhost:3000/api/items?q=book&categoryId=2&status=available&maxPrice=150
+// GET ${process.env.REACT_APP_API_URL}/items
+// GET ${process.env.REACT_APP_API_URL}/items?q=calculator
+// GET ${process.env.REACT_APP_API_URL}/items?categoryId=1 
+// GET ${process.env.REACT_APP_API_URL}/items?status=available
+// GET ${process.env.REACT_APP_API_URL}/items?minPrice=50&maxPrice=200
+// GET ${process.env.REACT_APP_API_URL}/items?q=book&categoryId=2&status=available&maxPrice=150
 
 router.post('/', verifyToken, createItemController);
 

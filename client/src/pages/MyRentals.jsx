@@ -75,7 +75,7 @@ const MyRentals = () => {
       const imagesMap = {};
       for (const rental of sortedRentals) {
         try {
-          const imageResponse = await axios.get(`http://localhost:3000/api/items/${rental.item_id}/images`);
+          const imageResponse = await axios.get(`${process.env.REACT_APP_API_URL}/items/${rental.item_id}/images`);
           if (imageResponse.data?.images) {
             const primaryImage = imageResponse.data.images.find(img => img.is_primary === 1) || imageResponse.data.images[0];
             imagesMap[rental.item_id] = primaryImage?.image_url;
@@ -208,7 +208,7 @@ const MyRentals = () => {
     const handleStatusChange = async (newStatus) => {
       try {
         const response = await axios.put(
-          `http://localhost:3000/api/rentals/${rental.rental_id}/status`,
+          `${process.env.REACT_APP_API_URL}/rentals/${rental.rental_id}/status`,
           { newStatus },
           {
             headers: {

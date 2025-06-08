@@ -32,7 +32,7 @@ const ItemDetails = () => {
   //   console.log("gfhjdfsg")
   //   const fetchItemImage = async () => {
   //     try{
-  //       const response = await axios.get(`http://localhost:3000/api/items/${itemId}/images`);
+  //       const response = await axios.get(`${process.env.REACT_APP_API_URL}/items/${itemId}/images`);
   //       console.log(response);
   //       console.log(response.data.item.primary_image_url);
   //       // setPrimaryImageUrl(response.data.item.primary_image_url);
@@ -50,7 +50,7 @@ const ItemDetails = () => {
   useEffect(() => {
     const fetchItemImage = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/items/${itemId}/images`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/${itemId}/images`);
         if (response.data?.images) {
           setImages(response?.data?.images);
           const primary = response.data.images.find(img => img.is_primary === 1);
@@ -65,7 +65,7 @@ const ItemDetails = () => {
       if (!token) return;
       
       try {
-        const response = await axios.get('http://localhost:3000/api/wishlist', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/wishlist`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ const ItemDetails = () => {
 
     try {
       if (isWishlisted) {
-        await axios.delete(`http://localhost:3000/api/wishlist/${itemId}`, {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/wishlist/${itemId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -108,7 +108,7 @@ const ItemDetails = () => {
         setIsWishlisted(false);
         toast.success('Item removed from wishlist');
       } else {
-        await axios.post('http://localhost:3000/api/wishlist', 
+        await axios.post(`${process.env.REACT_APP_API_URL}/api/wishlist`, 
           { itemId },
           {
             headers: {
@@ -160,7 +160,7 @@ const ItemDetails = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:3000/api/rentals', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/rentals`, {
         itemId: parseInt(itemId),
         startDate: startDate,
         endDate: endDate,

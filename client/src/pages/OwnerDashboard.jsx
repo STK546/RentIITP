@@ -34,7 +34,7 @@ const OwnerDashboard = () => {
   const fetchRentals = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/api/rentals?role=owner', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/rentals?role=owner`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -114,7 +114,7 @@ const OwnerDashboard = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/rentals/${rentalId}/status`,
+        `${process.env.REACT_APP_API_URL}/rentals/${rentalId}/status`,
         { newStatus },
         {
           headers: {
