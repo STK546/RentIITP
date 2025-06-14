@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Menu, Transition } from '@headlessui/react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
@@ -19,6 +19,7 @@ const Navbar = () => {
   const [error, setError] = useState(null);
   const notificationRef = useRef(null);
 
+  const navigate = useNavigate();
   console.log(user)
 
   // console.log(user);
@@ -63,10 +64,17 @@ const Navbar = () => {
     };
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  // const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleLogout = () => {
+    console.log("Logging out");
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     dispatch(logout());
+
+    navigate('/');
+
+
   };
 
   return (

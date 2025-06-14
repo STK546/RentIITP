@@ -1,45 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL;;
+const API_URL = process.env.REACT_APP_API_URL;
 
-// Get user from localStorage
+// Initial localStorage data
 const user = JSON.parse(localStorage.getItem('user'));
-const token = localStorage.getItem('token'); // Remove JSON.parse since we're storing as string
+const token = localStorage.getItem('token');
 
 const initialState = {
   user: user || null,
+  token: token || null,
   isLoading: false,
-  error: null,
-  token: token || null
+  isSuccess: false,
+  isError: false,
+  message: '',
+  error: null
 };
 
-// Helper function to set cookie
-const setCookie = (name, value, days) => {
-  const date = new Date();
-  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-  const expires = "expires=" + date.toUTCString();
-  document.cookie = name + "=" + value + ";" + expires + ";path=/";
-};
 
-// Helper function to get cookie
-const getCookie = (name) => {
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(';');
-  for(let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-};
-
-// Helper function to delete cookie
-const deleteCookie = (name) => {
-  document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-};
-
-// Fetch user profile
 export const fetchUserProfile = createAsyncThunk(
   'auth/fetchUserProfile',
   async (_, { rejectWithValue }) => {
@@ -47,7 +25,6 @@ export const fetchUserProfile = createAsyncThunk(
       const response = await axios.get(`${API_URL}/users/profile`, {
         withCredentials: true
       });
-      console.log(response)
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');
@@ -55,7 +32,6 @@ export const fetchUserProfile = createAsyncThunk(
   }
 );
 
-// Register user
 export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
@@ -63,15 +39,13 @@ export const register = createAsyncThunk(
       const response = await axios.post(`${API_URL}/auth/register`, userData, {
         withCredentials: true
       });
-      
-      // After successful registration, fetch the complete user profile
+
       const profileResponse = await axios.get(`${API_URL}/users/profile`, {
         withCredentials: true
       });
-      
-      // Store complete user data in localStorage
+
       localStorage.setItem('user', JSON.stringify(profileResponse.data));
-      localStorage.setItem('token', response?.data?.accessToken); // Store token directly without JSON.stringify
+      localStorage.setItem('token', response?.data?.accessToken);
 
       return profileResponse.data;
     } catch (error) {
@@ -80,7 +54,6 @@ export const register = createAsyncThunk(
   }
 );
 
-// Login user
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
@@ -88,15 +61,13 @@ export const login = createAsyncThunk(
       const response = await axios.post(`${API_URL}/auth/login`, credentials, {
         withCredentials: true
       });
-      
-      // After successful login, fetch the complete user profile
+
       const profileResponse = await axios.get(`${API_URL}/users/profile`, {
         withCredentials: true
       });
-      
-      // Store complete user data in localStorage
+
       localStorage.setItem('user', JSON.stringify(profileResponse.data));
-      localStorage.setItem('token', response?.data?.accessToken); // Store token directly without JSON.stringify
+      localStorage.setItem('token', response?.data?.accessToken);
       return profileResponse.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -104,37 +75,37 @@ export const login = createAsyncThunk(
   }
 );
 
-// Logout user
-export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async () => {
-    try {
-      await axios.post(`${API_URL}/auth/logout`, {}, {
-        withCredentials: true
-      });
-    } finally {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');  
-      deleteCookie('token');
-    }
-  }
-);
+// export const logoutUser = createAsyncThunk(
+//   'auth/logout',
+//   async (_, { dispatch }) => {
+//     try {
 
-// Update profile
+//       console.log("hello")
+//       await axios.post(`${API_URL}/auth/logout`, {}, {
+//         withCredentials: true
+//       });
+//     } finally {
+//       localStorage.removeItem('user');
+//       localStorage.removeItem('token');
+//       deleteCookie('token');
+//       dispatch(logout());
+//     }
+//   }
+// );
+
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (profileData, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/users/profile`, profileData, {
+
+      await axios.put(`${API_URL}/users/profile`, profileData, {
         withCredentials: true
       });
-      
-      // After successful update, fetch the complete user profile
+
       const profileResponse = await axios.get(`${API_URL}/users/profile`, {
         withCredentials: true
       });
-      
-      // Update localStorage with complete user data
+
       localStorage.setItem('user', JSON.stringify(profileResponse.data));
       return profileResponse.data;
     } catch (error) {
@@ -143,37 +114,53 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+// Slice
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.message = '';
     },
     logout: (state) => {
       state.user = null;
-      state.token = null;  
+      state.token = null;
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = '';
       state.error = null;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch User Profile cases
+      // --- FETCH PROFILE ---
       .addCase(fetchUserProfile.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
         state.error = null;
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload;
+        state.isSuccess = true;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        state.isError = true;
+        state.message = action.payload;
       })
-      // Register cases
+
+      // --- REGISTER ---
       .addCase(register.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -186,9 +173,13 @@ const authSlice = createSlice({
         state.message = action.payload;
         state.user = null;
       })
-      // Login cases
+
+      // --- LOGIN ---
       .addCase(login.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -201,13 +192,24 @@ const authSlice = createSlice({
         state.message = action.payload;
         state.user = null;
       })
-      // Logout cases
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
-      })
-      // Update profile cases
+
+      // // --- LOGOUT ---
+      // .addCase(logoutUser.fulfilled, (state) => {
+      //   state.user = null;
+      //   state.token = null;
+      //   state.isLoading = false;
+      //   state.isSuccess = false;
+      //   state.isError = false;
+      //   state.message = '';
+      //   state.error = null;
+      // })
+
+      // --- UPDATE PROFILE ---
       .addCase(updateProfile.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -223,5 +225,4 @@ const authSlice = createSlice({
 });
 
 export const { clearError, logout } = authSlice.actions;
-
-export default authSlice.reducer; 
+export default authSlice.reducer;

@@ -73,8 +73,8 @@ async function login(req, res, next) {
             // Set token in httpOnly cookie
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false, // Set to true in production with HTTPS
-                sameSite: 'strict',
+                secure: true,
+                sameSite: 'None',
                 maxAge: SEVEN_DAYS, // Changed from ONE_DAY to SEVEN_DAYS
             });
 
@@ -99,11 +99,14 @@ async function login(req, res, next) {
 async function logout(req, res) {
     try {
         // Clear the token cookie
-        res.clearCookie('token', {
+        console.log("logout")
+        res.clearCookie('user','token', {
             httpOnly: true,
-            secure: false, // Set to true in production with HTTPS
-            sameSite: 'strict'
+            secure: true, // Set to true in production with HTTPS
+            sameSite: 'None'
         });
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');    
 
         res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {

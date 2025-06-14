@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, logoutUser, register } from '../features/auth/authSlice';
+import { login, register } from '../features/auth/authSlice';
 
 const useAuth = () => {
   const dispatch = useDispatch();
@@ -18,7 +18,11 @@ const useAuth = () => {
 
   const handleLogout = async () => {
     try {
-      await dispatch(logoutUser()).unwrap();
+      console.log("hello")
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      
+      // await dispatch(logoutUser()).unwrap();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
