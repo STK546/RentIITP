@@ -34,7 +34,7 @@ const Browse = () => {
       const imagesMap = {};
       for (const item of items) {
         try {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL}/${item.item_id}/images`);
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/items/${item.item_id}/images`);
           if (response.data?.images) {
             const primaryImage = response.data.images.find(img => img.is_primary === 1) || response.data.images[0];
             imagesMap[item.item_id] = primaryImage?.image_url;
