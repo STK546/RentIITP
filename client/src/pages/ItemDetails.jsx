@@ -498,20 +498,20 @@ const ItemDetails = () => {
                   <span className={`${
                     isDarkMode ? 'text-blue-400' : 'text-blue-600'
                   } font-semibold text-lg`}>
-                    {selectedItem.owner_first_name?.[0]}{selectedItem.owner_last_name?.[0]}
+                    {selectedItem.owner_username?.[0]}
                   </span>
                 </div>
                 <div>
                   <h4 className={`font-medium ${
                     isDarkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    {selectedItem.owner_first_name} {selectedItem.owner_last_name}
+                    @{selectedItem.owner_username} 
                   </h4>
-                  <p className={`text-sm ${
+                  {/* <p className={`text-sm ${
                     isDarkMode ? 'text-gray-400' : 'text-gray-500'
                   }`}>
                     @{selectedItem.owner_username}
-                  </p>
+                  </p> */}
                 </div>
               </div>
 
