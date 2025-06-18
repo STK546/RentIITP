@@ -36,14 +36,27 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
+      let token='';
       const response = await axios.post(`${API_URL}/auth/register`, userData, {
         withCredentials: true
       });
 
+
+      token = response?.data?.accessToken;
+      console.log(token);
+
       const profileResponse = await axios.get(`${API_URL}/users/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         withCredentials: true
       });
 
+
+      // const profileResponse = await axios.get(`${API_URL}/users/profile`, {
+      //   withCredentials: true
+      // });
+      
       localStorage.setItem('user', JSON.stringify(profileResponse.data));
       localStorage.setItem('token', response?.data?.accessToken);
 

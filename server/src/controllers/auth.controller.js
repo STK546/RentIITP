@@ -100,9 +100,9 @@ async function logout(req, res) {
     try {
         // Clear the token cookie
         console.log("logout")
-        res.clearCookie('user','token', {
+        res.clearCookie('token', {
             httpOnly: true,
-            secure: true, // Set to true in production with HTTPS
+            secure: true, 
             sameSite: 'None'
         });
         localStorage.removeItem('token');
