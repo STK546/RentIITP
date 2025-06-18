@@ -108,7 +108,7 @@ const ItemDetails = () => {
         setIsWishlisted(false);
         toast.success('Item removed from wishlist');
       } else {
-        await axios.post(`${process.env.REACT_APP_API_URL}/api/wishlist`, 
+        await axios.post(`${process.env.REACT_APP_API_URL}/wishlist`, 
           { itemId },
           {
             headers: {
