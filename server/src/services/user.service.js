@@ -17,6 +17,22 @@ async function getUserProfile(userId) {
 }
 
 
+export async function getUserNameById(userId) {
+
+    const sql = `SELECT username FROM Users WHERE user_id = ?`;
+
+    try {
+        const [rows] = await pool.execute(sql, [userId]);
+        if (rows.length > 0) {
+            return rows[0].username;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error in getUserNameById service:', error);
+        throw new Error('Error retrieving user name');
+    }
+}
+
 async function changePassword(userId, oldPassword, newPassword) {
     const sql = `CALL ChangePassword(?, ?, ?, @msg)`;
     const params = [userId, oldPassword, newPassword];

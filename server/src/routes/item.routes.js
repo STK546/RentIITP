@@ -21,18 +21,18 @@ router.post('/', verifyToken, createItemController);
 
 router.get('/owner', verifyToken,getOwnerItems);
 
+router.get('/:itemId/images', getItemImagesController);
 router.get('/:itemId', getItemController);
 
 
+router.put('/:itemId/status', verifyToken, updateItemAvailabilityController);
 router.put('/:itemId', verifyToken, updateItemController);
 
 router.delete('/:itemId', verifyToken, deleteItemController);
 
 router.post('/:itemId/images', verifyToken, addImageController);
 
-router.put('/:itemId/status', verifyToken, updateItemAvailabilityController);
 
-router.get('/:itemId/images', getItemImagesController);
 
 
 export default router;

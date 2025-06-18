@@ -50,7 +50,7 @@ const ItemDetails = () => {
   useEffect(() => {
     const fetchItemImage = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/${itemId}/images`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/items/${itemId}/images`);
         if (response.data?.images) {
           setImages(response?.data?.images);
           const primary = response.data.images.find(img => img.is_primary === 1);

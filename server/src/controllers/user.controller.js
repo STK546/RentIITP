@@ -1,4 +1,4 @@
-import { getUserProfile, changePassword, updateUserProfile } from '../services/user.service.js';
+import { getUserProfile, changePassword, updateUserProfile, getUserNameById } from '../services/user.service.js';
 
 async function getProfile(req, res, next) {
     // console.log("hello")
@@ -21,6 +21,26 @@ async function getProfile(req, res, next) {
         next(error);
     }
 }
+
+
+
+export async function getUserName(req, res, next) {
+    const { userId } = req.params;
+
+    try {
+        const name = await getUserNameById(userId);
+
+        if (name) {
+            res.status(200).json({ name });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error in getUserName controller:', error);
+        next(error);
+    }
+}
+
 
 async function updatePassword(req, res, next) {
     const userId = req.userId; 

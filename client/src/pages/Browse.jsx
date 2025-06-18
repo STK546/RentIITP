@@ -15,6 +15,9 @@ const Browse = () => {
   const { categories } = useSelector((state) => state.categories);
   const [itemImages, setItemImages] = useState({});
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
+
+  const [ownerNames, setOwnerNames] = useState({});
+
   
   const [filters, setFilters] = useState({
     search: '',
@@ -24,10 +27,14 @@ const Browse = () => {
     availability: ''
   });
 
+
+  
   useEffect(() => {
     dispatch(fetchItems());
     dispatch(fetchCategories());
   }, [dispatch]);
+
+  // console.log(items);
 
   useEffect(() => {
     const fetchItemImages = async () => {
@@ -50,6 +57,35 @@ const Browse = () => {
       fetchItemImages();
     }
   }, [items]);
+
+  
+  useEffect(() => {
+    const fetchOwnerNames = async () => {
+      const uniqueOwnerIds = [...new Set(items.map(item => item.owner_id))];
+      const namesMap = { ...ownerNames }; // avoid overwriting if already fetched
+    
+      await Promise.all(uniqueOwnerIds.map(async (ownerId) => {
+        if (!namesMap[ownerId]) {
+          try {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${ownerId}/name`);
+            if (res.data?.name) {
+              namesMap[ownerId] = res.data.name;
+            }
+          } catch (err) {
+            console.error(`Failed to fetch name for user ${ownerId}:`, err);
+            namesMap[ownerId] = "Anonymous";
+          }
+        }
+      }));
+    
+      setOwnerNames(namesMap);
+    };
+  
+    if (items.length > 0) {
+      fetchOwnerNames();
+    }
+  }, [items, ownerNames]);
+
 
   const filteredItems = items?.filter(item => {
     const matchesSearch = !filters.search || 
@@ -434,7 +470,7 @@ const Browse = () => {
                         <p className={`text-sm font-medium ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}>
-                          {item.ownername || 'Anonymous'}
+                          <span>Owner: {ownerNames[item.owner_id] || "Loading..."}</span>
                         </p>
                         <p className={`text-xs ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'

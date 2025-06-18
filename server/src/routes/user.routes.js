@@ -1,6 +1,6 @@
 // src/routes/user.routes.js
 import { Router } from 'express';
-import { getProfile, updatePassword, updateProfile } from '../controllers/user.controller.js';
+import { getProfile, getUserName, updatePassword, updateProfile } from '../controllers/user.controller.js';
 import verifyToken from '../middleware/auth.middleware.js'; 
 
 const router = Router();
@@ -19,6 +19,11 @@ router.put(
     '/profile', 
     verifyToken, 
     updateProfile
+);
+
+router.get(
+    '/:userId/name',
+     getUserName
 );
 
 export default router;
