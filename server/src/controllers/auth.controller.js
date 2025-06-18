@@ -5,36 +5,27 @@ import jwt from 'jsonwebtoken';
 const { sign } = jwt;
 
 async function register(req, res, next) {
-    const requiredFields = [
-        'username', 
-        'email', 
-        'password', 
-        // 'firstName', 
-        // 'lastName',
-        'rollNumber', 
-        // 'phoneNumber', 
-        'hostelName', 
-        'hostelBlock',
-        'roomNumber',
-        // 'profilePictureUrl'
-    ];
-
-    // console.log(req.body)
-    // const missingFields = requiredFields.filter(field => !req.body[field]);
-
-    // if (missingFields.length > 0) {
-    //     console.log("Missing fields:", missingFields);
-    //     return res.status(400).json({ 
-    //         message: 'Missing required fields.', 
-    //         missingFields 
-    //     });
-    // }
-
     try {
         const result = await registerUser(req.body);
-        console.log(result)
+        console.log(result);
+
         if (result.userId) {
-            res.status(201).json({ userId: result.userId, message: result.message }); 
+            const payload = { id: result.userId, username: result.username };
+            const token = sign(payload, secret, { expiresIn: _expiresIn });
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true, 
+                sameSite: 'None',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            });
+
+            res.status(201).json({
+                userId: result.userId,
+                username: result.username,
+                message: result.message,
+                accessToken: token, 
+            });
         } else {
             const statusCode = result.message.includes('exists') ? 409 : 400;
             res.status(statusCode).json({ message: result.message });
@@ -43,6 +34,7 @@ async function register(req, res, next) {
         next(error);
     }
 }
+
 
 const ONE_DAY = 24 * 60 * 60 * 1000; 
 const SEVEN_DAYS = 7 * ONE_DAY; // 7 days in milliseconds
@@ -59,23 +51,20 @@ async function login(req, res, next) {
         console.log(result,"afs")
 
         if (result.userId && result.accountStatus === 'active') {
-            // JWT Payload
             const payload = {
                 id: result.userId,
                 username: result.username,
             };
 
-            // Signing token
             const token = sign(payload, secret, {
                 expiresIn: _expiresIn
             });
 
-            // Set token in httpOnly cookie
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: true,
                 sameSite: 'None',
-                maxAge: SEVEN_DAYS, // Changed from ONE_DAY to SEVEN_DAYS
+                maxAge: SEVEN_DAYS, 
             });
 
             // Send token and user info 
@@ -89,7 +78,7 @@ async function login(req, res, next) {
                 accessToken: token
             });
         } else {
-            res.status(401).json({ message: result.message || 'Invalid username or password.' }); // Unauthorized
+            res.status(401).json({ message: result.message || 'Invalid username or password.' });
         }
     } catch (error) {
         next(error);
