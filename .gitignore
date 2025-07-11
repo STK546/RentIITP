@@ -1,5 +1,6 @@
 .env
 /client/node_modules
+/server/node_modules
 /database/output.sql
 /server/.env
 
