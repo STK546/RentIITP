@@ -3,18 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useTheme } from '../hooks/useTheme';
+
+const CATEGORIES = [
+  { id: 1, name: 'Electronics' },
+  { id: 2, name: 'Books' },
+  { id: 3, name: 'Cycles' },
+  { id: 4, name: 'Sports Equipment' },
+  { id: 5, name: 'Stationery' },
+  { id: 6, name: 'Room Essentials' },
+  { id: 7, name: 'Clothing & Accessories' },
+  { id: 8, name: 'Musical Instruments' },
+  { id: 9, name: 'Tools & Hardware' },
+  { id: 10, name: 'Gaming' },
+  { id: 11, name: 'Furniture' },
+  { id: 12, name: 'Kitchen Appliances' },
+  { id: 13, name: 'Outdoor Gear' },
+  { id: 14, name: 'Photography' },
+  { id: 15, name: 'Vehicles' },
+  { id: 16, name: 'Health & Fitness' },
+  { id: 17, name: 'Toys & Games' },
+  { id: 18, name: 'Art Supplies' },
+  { id: 19, name: 'Electronics Accessories' },
+  { id: 20, name: 'Books - Fiction' }
+];
 
 const AddItem = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: 'Electronics',
+    category: '1', // Default to Electronics
     condition: 'New',
     rentalPrice: '',
     rentalPeriod: 'Per Hour',
-    image: null
+    image: null,
+    locationDescription: '',
+    maxRentalDuration: ''
   });
   
   const [previewImage, setPreviewImage] = useState(null);
@@ -100,12 +127,14 @@ const AddItem = () => {
         itemCondition: formData.condition,
         rentalPrice: parseFloat(formData.rentalPrice),
         rentalUnit: getRentalUnit(formData.rentalPeriod),
-        primaryImageUrl: imageUrl
+        primaryImageUrl: imageUrl,
+        locationDescription: formData.locationDescription,
+        maxRentalDuration: parseInt(formData.maxRentalDuration)
       };
 
       // Make the API request with credentials
       const response = await axios.post(
-        'http://localhost:3000/api/items', 
+        `${process.env.REACT_APP_API_URL}/items`, 
         requestData,
         {
           withCredentials: true,
@@ -128,66 +157,65 @@ const AddItem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} py-8 px-4 sm:px-6 lg:px-8`}>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Add New Item</h1>
-        <p className="text-gray-600 mb-6">Fill in the details below to list your item for rent</p>
+        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-2`}>Add New Item</h1>
+        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-6`}>Fill in the details below to list your item for rent</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Item Information Box */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Item Information</h2>
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+            <h2 className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Item Information</h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Item Title</label>
+                <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Item Title</label>
                 <input
                   type="text"
                   name="title"
                   placeholder="Enter item title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Description</label>
                 <textarea
                   name="description"
                   placeholder="Describe your item"
                   value={formData.description}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Category</label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
                   >
-                    <option>Electronics</option>
-                    <option>Books</option>
-                    <option>Furniture</option>
-                    <option>Sports</option>
-                    <option>Clothing</option>
-                    <option>Others</option>
+                    {CATEGORIES.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Condition</label>
                   <select
                     name="condition"
                     value={formData.condition}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
                   >
                     <option>New</option>
                     <option>Like New</option>
@@ -200,33 +228,33 @@ const AddItem = () => {
           </div>
 
           {/* Pricing Box */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Pricing</h2>
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+            <h2 className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Pricing & Terms</h2>
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rental Price</label>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Rental Price</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <span className={`absolute left-3 top-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>₹</span>
                     <input
                       type="number"
                       name="rentalPrice"
                       placeholder="0.00"
                       value={formData.rentalPrice}
                       onChange={handleChange}
-                      className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                      className={`w-full pl-7 pr-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rental Period</label>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Rental Period</label>
                   <select
                     name="rentalPeriod"
                     value={formData.rentalPeriod}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
                   >
                     <option>Per Hour</option>
                     <option>Per Day</option>
@@ -236,13 +264,37 @@ const AddItem = () => {
                 </div>
               </div>
 
-              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Location</label>
+                  <input
+                    type="text"
+                    name="locationDescription"
+                    placeholder="Enter pickup location"
+                    value={formData.locationDescription}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Maximum Duration</label>
+                  <input
+                    type="number"
+                    name="maxRentalDuration"
+                    placeholder="Enter maximum rental duration"
+                    value={formData.maxRentalDuration}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300 text-gray-900'} rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500`}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Images Box */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Images</h2>
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+            <h2 className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Images</h2>
             
             {previewImage ? (
               <div className="mb-4">
@@ -263,7 +315,7 @@ const AddItem = () => {
               </div>
             ) : (
               <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6"
+                className={`border-2 border-dashed ${isDarkMode ? 'border-gray-700' : 'border-gray-300'} rounded-lg p-6`}
                 onDrop={handleImageUpload}
                 onDragOver={(e) => e.preventDefault()}
               >
@@ -273,8 +325,8 @@ const AddItem = () => {
                       <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <div className="mt-4 flex text-sm text-gray-600 justify-center">
-                    <label className="relative cursor-pointer rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+                  <div className={`mt-4 flex text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} justify-center`}>
+                    <label className={`relative cursor-pointer rounded-md font-medium ${isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-primary-600 hover:text-primary-500'} focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500`}>
                       <span>Drag and drop image here or click to upload</span>
                       <input
                         type="file"
@@ -284,7 +336,7 @@ const AddItem = () => {
                       />
                     </label>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-2`}>
                     PNG or JPG (max. 5MB)
                   </p>
                 </div>
@@ -297,14 +349,22 @@ const AddItem = () => {
             <button
               type="submit"
               disabled={uploading}
-              className="px-4 py-2 bg-gray-900 text-white text-sm rounded-md hover:bg-gray-800 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`px-4 py-2 ${
+                isDarkMode 
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-gray-900 hover:bg-gray-800'
+              } text-white text-sm rounded-md focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {uploading ? 'Saving...' : 'Save Item'}
             </button>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="px-4 py-2 bg-white text-sm text-gray-700 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none"
+              className={`px-4 py-2 text-sm rounded-md border ${
+                isDarkMode 
+                  ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              } focus:outline-none`}
             >
               Cancel
             </button>
@@ -315,16 +375,10 @@ const AddItem = () => {
   );
 };
 
-const getCategoryId = (category) => {
-  const categoryMap = {
-    'Electronics': 1,
-    'Books': 2,
-    'Furniture': 3,
-    'Sports': 4,
-    'Clothing': 5,
-    'Others': 6
-  };
-  return categoryMap[category] || 6; // Default to Others if category not found
+const getCategoryId = (categoryId) => {
+  // Since we're now using the category ID directly from the select,
+  // we can just return it as a number
+  return parseInt(categoryId);
 };
 
 const getRentalUnit = (period) => {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
 import rentalsApi from '../services/api/rentals';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -8,6 +9,7 @@ import Footer from '../components/layout/Footer';
 
 const MyRentals = () => {
   const { user } = useAuth();
+  const { isDarkMode, getThemeClasses } = useTheme();
   const [rentals, setRentals] = useState({ current: [], past: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -73,7 +75,7 @@ const MyRentals = () => {
       const imagesMap = {};
       for (const rental of sortedRentals) {
         try {
-          const imageResponse = await axios.get(`http://localhost:3000/api/items/${rental.item_id}/images`);
+          const imageResponse = await axios.get(`${process.env.REACT_APP_API_URL}/items/${rental.item_id}/images`);
           if (imageResponse.data?.images) {
             const primaryImage = imageResponse.data.images.find(img => img.is_primary === 1) || imageResponse.data.images[0];
             imagesMap[rental.item_id] = primaryImage?.image_url;
@@ -140,14 +142,14 @@ const MyRentals = () => {
   if (!user) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className={`min-h-screen ${getThemeClasses.background} py-12 px-4 sm:px-6 lg:px-8`}>
           <div className="max-w-7xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Access Required</h2>
-              <p className="text-gray-600 mb-6">Please log in to view your rentals.</p>
+            <div className={`${getThemeClasses.card} rounded-lg shadow-sm p-6 text-center`}>
+              <h2 className={`text-2xl font-semibold ${getThemeClasses.text} mb-4`}>Access Required</h2>
+              <p className={`${getThemeClasses.secondaryText} mb-6`}>Please log in to view your rentals.</p>
               <Link
                 to="/login"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-800"
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm ${getThemeClasses.button}`}
               >
                 Log In
               </Link>
@@ -162,10 +164,10 @@ const MyRentals = () => {
   if (loading) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className={`min-h-screen ${getThemeClasses.background} py-12 px-4 sm:px-6 lg:px-8`}>
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+              <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDarkMode ? 'border-white' : 'border-gray-900'}`}></div>
             </div>
           </div>
         </div>
@@ -177,18 +179,18 @@ const MyRentals = () => {
   if (error) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className={`min-h-screen ${getThemeClasses.background} py-12 px-4 sm:px-6 lg:px-8`}>
           <div className="max-w-7xl mx-auto">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className={`${isDarkMode ? 'bg-red-900 border-red-800' : 'bg-red-50 border-red-200'} border rounded-lg p-6`}>
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`h-6 w-6 ${isDarkMode ? 'text-red-400' : 'text-red-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg font-medium text-red-800">Error Loading Rentals</h3>
-                  <p className="mt-2 text-red-700">{error}</p>
+                  <h3 className={`text-lg font-medium ${isDarkMode ? 'text-red-200' : 'text-red-800'}`}>Error Loading Rentals</h3>
+                  <p className={`mt-2 ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>{error}</p>
                 </div>
               </div>
             </div>
@@ -203,34 +205,10 @@ const MyRentals = () => {
     const isOwner = rental.owner_id === user.userId;
     const isRenter = rental.renter_id === user.userId;
 
-    // Calculate amount till now for active rentals
-    const calculateAmountTillNow = () => {
-      if (rental.rental_status.toLowerCase() !== 'active') {
-        return rental.total_amount;
-      }
-
-      const startDate = new Date(rental.start_date);
-      const currentDate = new Date();
-      const endDate = new Date(rental.end_date);
-      
-      // If current date is past end date, return total amount
-      if (currentDate > endDate) {
-        return rental.total_amount;
-      }
-
-      // Calculate days elapsed
-      const daysElapsed = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24));
-      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-      
-      // Calculate prorated amount
-      const amountPerDay = rental.total_amount / totalDays;
-      return Math.round(amountPerDay * daysElapsed);
-    };
-
     const handleStatusChange = async (newStatus) => {
       try {
         const response = await axios.put(
-          `http://localhost:3000/api/rentals/${rental.rental_id}/status`,
+          `${process.env.REACT_APP_API_URL}/rentals/${rental.rental_id}/status`,
           { newStatus },
           {
             headers: {
@@ -335,9 +313,9 @@ const MyRentals = () => {
     };
 
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+      <div className={`${getThemeClasses.card} rounded-lg shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} overflow-hidden hover:shadow-md transition-shadow duration-200`}>
         <div className="flex">
-          <div className="flex-shrink-0 w-52 h-52 bg-gray-100">
+          <div className={`flex-shrink-0 w-52 h-52 ${getThemeClasses.secondaryBackground}`}>
             {itemImages[rental.item_id] && (
               <img
                 src={itemImages[rental.item_id]}
@@ -349,10 +327,10 @@ const MyRentals = () => {
           <div className="flex-1 p-6">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className={`text-lg font-semibold ${getThemeClasses.text}`}>
                   {rental.item_name}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className={`text-sm ${getThemeClasses.secondaryText}`}>
                   {isOwner ? 'Rented to' : 'Rented from'}: {isOwner ? rental.renter_name : rental.username}
                 </p>
               </div>
@@ -363,29 +341,28 @@ const MyRentals = () => {
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Start Date</p>
-                <p className="text-sm text-gray-900">{formatDate(rental.start_date)}</p>
+                <p className={`text-sm font-medium ${getThemeClasses.secondaryText}`}>Start Date</p>
+                <p className={`text-sm ${getThemeClasses.text}`}>{formatDate(rental.start_date)}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">End Date</p>
-                <p className="text-sm text-gray-900">{formatDate(rental.end_date)}</p>
+                <p className={`text-sm font-medium ${getThemeClasses.secondaryText}`}>End Date</p>
+                <p className={`text-sm ${getThemeClasses.text}`}>{formatDate(rental.end_date)}</p>
               </div>
-              <div className="col-span-2 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {rental.rental_status.toLowerCase() === 'active' ? 'Amount Till Now' : 'Total Amount'}
+              <div className="col-span-2">
+                <div className="flex items-center space-x-2">
+                  <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <p className={`text-sm ${getThemeClasses.text}`}>
+                    {rental.location || 'IIT Patna Campus'}
                   </p>
-                  <p className="text-sm text-gray-900">₹{calculateAmountTillNow()}</p>
-                  {rental.rental_status.toLowerCase() === 'active' && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Final amount: ₹{rental.total_amount}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  {renderActionButtons()}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-3 flex justify-end">
+              {renderActionButtons()}
             </div>
           </div>
         </div>
@@ -395,13 +372,17 @@ const MyRentals = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className={`min-h-screen ${getThemeClasses.background}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">My Rentals</h1>
+            <h1 className={`text-3xl font-bold ${getThemeClasses.text}`}>My Rentals</h1>
             <Link
               to="/browse"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-800"
+              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm ${
+                isDarkMode
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              } transition-colors duration-200`}
             >
               Browse More Items
             </Link>
@@ -413,8 +394,8 @@ const MyRentals = () => {
                 onClick={() => setActiveTab('current')}
                 className={`px-3 py-2 text-sm font-medium rounded-md ${
                   activeTab === 'current'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'
+                    : isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Current Rentals ({rentals.current.length})
@@ -423,8 +404,8 @@ const MyRentals = () => {
                 onClick={() => setActiveTab('past')}
                 className={`px-3 py-2 text-sm font-medium rounded-md ${
                   activeTab === 'past'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'
+                    : isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Past Rentals ({rentals.past.length})
@@ -434,12 +415,16 @@ const MyRentals = () => {
 
           <div className="space-y-6">
             {activeTab === 'current' && rentals.current.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Current Rentals</h3>
-                <p className="text-gray-500 mb-4">You don't have any active rentals at the moment.</p>
+              <div className={`${getThemeClasses.card} rounded-lg shadow-sm p-6 text-center`}>
+                <h3 className={`text-lg font-medium ${getThemeClasses.text} mb-2`}>No Current Rentals</h3>
+                <p className={`${getThemeClasses.secondaryText} mb-4`}>You don't have any active rentals at the moment.</p>
                 <Link
                   to="/browse"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm ${
+                    isDarkMode
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white border-transparent'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white border-transparent'
+                  } transition-colors duration-200`}
                 >
                   Browse Available Items
                 </Link>
@@ -447,9 +432,9 @@ const MyRentals = () => {
             )}
 
             {activeTab === 'past' && rentals.past.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Past Rentals</h3>
-                <p className="text-gray-500">Your rental history will appear here.</p>
+              <div className={`${getThemeClasses.card} rounded-lg shadow-sm p-6 text-center`}>
+                <h3 className={`text-lg font-medium ${getThemeClasses.text} mb-2`}>No Past Rentals</h3>
+                <p className={`${getThemeClasses.secondaryText}`}>Your rental history will appear here.</p>
               </div>
             )}
 

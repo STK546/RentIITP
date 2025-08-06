@@ -2,6 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
+}
+
+/* Base styles */
+body {
+  @apply antialiased;
+}
+
+/* Dark mode overrides */
+.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  @apply bg-gray-800 border-gray-700 text-gray-100;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  @apply text-gray-400;
+}
+
+.dark button {
+  @apply hover:bg-gray-700;
+}
+
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark .bg-gray-50 {
+  @apply bg-gray-900;
+}
+
+.dark .bg-gray-100 {
+  @apply bg-gray-800;
+}
+
+.dark .border-gray-200 {
+  @apply border-gray-700;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark .text-gray-900 {
+  @apply text-gray-100;
+}
+
+.dark .text-gray-500 {
+  @apply text-gray-400;
+}
+
+.dark .shadow-sm {
+  @apply shadow-gray-900/20;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  @apply hover:bg-gray-700;
+}
+
+.dark .hover\:text-gray-900:hover {
+  @apply hover:text-gray-100;
+}
+
+.dark .hover\:text-gray-700:hover {
+  @apply hover:text-gray-300;
+}
+
+.dark .hover\:border-gray-300:hover {
+  @apply hover:border-gray-600;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  @apply hover:bg-gray-800;
+}
+
+.dark .bg-blue-500 {
+  @apply bg-blue-600;
+}
+
+.dark .hover\:bg-blue-600:hover {
+  @apply hover:bg-blue-700;
+}
+
 @layer base {
   html {
     font-family: Inter, system-ui, sans-serif;

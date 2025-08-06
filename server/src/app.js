@@ -15,9 +15,24 @@ app.use(json());
 app.use(urlencoded({ extended: true }));
 
 // CORS configuration
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    // 'https://rentiitp.onrender.com',
+    'https://rent-iitp.vercel.app',
+    'https://rentiitp.com',
+
+];
+
 app.use(cors({
-    origin: 'http://localhost:3001', // Your frontend URL
-    credentials: true, // Allow credentials
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
